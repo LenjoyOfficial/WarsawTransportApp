@@ -36,15 +36,15 @@ Set these keys locally (do not commit real values):
 
 **Android**
 - Add to `local.properties` (or `~/.gradle/gradle.properties`):
+  - `LEGACY_API_KEY=...`
   - `ZTM_API_KEY=...`
   - `MAPS_API_KEY=...`
-  - `GEOCODING_API_KEY=...`
 
 **iOS**
 - Add values in `iosApp/Configuration/Config.xcconfig`:
+  - `LEGACY_API_KEY=...`
   - `ZTM_API_KEY=...`
   - `MAPS_API_KEY=...`
-  - `GEOCODING_API_KEY=...`
 
 ---
 

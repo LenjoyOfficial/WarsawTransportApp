@@ -4,11 +4,11 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>LEGACY_API_KEY</key>
+	<string>$(LEGACY_API_KEY)</string>
 	<key>ZTM_API_KEY</key>
 	<string>$(ZTM_API_KEY)</string>
 	<key>MAPS_API_KEY</key>
 	<string>$(MAPS_API_KEY)</string>
-	<key>GEOCODING_API_KEY</key>
-	<string>$(GEOCODING_API_KEY)</string>
 </dict>
 </plist>

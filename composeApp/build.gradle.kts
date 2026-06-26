@@ -1,11 +1,13 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+	alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -14,7 +16,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -50,6 +52,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }
@@ -65,12 +68,15 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        val ztmApiKey = (project.findProperty("ZTM_API_KEY") as String?) ?: ""
-        val mapsApiKey = (project.findProperty("MAPS_API_KEY") as String?) ?: ""
-        val geocodingApiKey = (project.findProperty("GEOCODING_API_KEY") as String?) ?: ""
+		val localProperties = Properties()
+		localProperties.load(FileInputStream(rootProject.file("local.properties")))
+
+        val legacyApiKey = (localProperties["legacy.api.key"] as String?) ?: ""
+        val ztmApiKey = (localProperties["ztm.api.key"] as String?) ?: ""
+        val mapsApiKey = (localProperties["maps.api.key"] as String?) ?: ""
+        buildConfigField("String", "LEGACY_API_KEY", "\"$legacyApiKey\"")
         buildConfigField("String", "ZTM_API_KEY", "\"$ztmApiKey\"")
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
-        buildConfigField("String", "GEOCODING_API_KEY", "\"$geocodingApiKey\"")
     }
     buildFeatures {
         buildConfig = true

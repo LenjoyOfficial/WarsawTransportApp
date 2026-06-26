@@ -8,6 +8,10 @@ actual object ApiKeys {
         return value ?: ""
     }
 
-    actual fun get(name: ApiKeyName): String = read(name.configKey)
+    actual fun get(name: ApiKeyName): String = when (name) {
+        ApiKeyName.LEGACY -> read(name.configKey)
+        ApiKeyName.ZTM -> read(name.configKey)
+        ApiKeyName.MAPS -> read(name.configKey)
+    }
 }
 
