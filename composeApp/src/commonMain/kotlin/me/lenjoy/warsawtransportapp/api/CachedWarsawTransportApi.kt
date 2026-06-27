@@ -10,6 +10,11 @@ import me.lenjoy.warsawtransportapp.api.dto.ValuesRowDto
 import me.lenjoy.warsawtransportapp.api.dto.RouteStopDto
 import okio.FileSystem
 
+/**
+ * A Decorator for [WarsawTransportApi] that adds a persistent disk caching layer.
+ * All API calls are intercepted: if valid cached data exists (less than 24h old), it is returned.
+ * Otherwise, the call is delegated to the [delegate], and the result is cached.
+ */
 class CachedWarsawTransportApi(
     private val delegate: WarsawTransportApi,
     private val cacheManager: CacheManager

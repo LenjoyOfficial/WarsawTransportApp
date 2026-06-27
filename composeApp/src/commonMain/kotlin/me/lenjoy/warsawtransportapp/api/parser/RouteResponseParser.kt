@@ -4,6 +4,10 @@ import me.lenjoy.warsawtransportapp.api.dto.RoutesResponseDto
 import me.lenjoy.warsawtransportapp.api.model.RouteLine
 import me.lenjoy.warsawtransportapp.api.model.RouteStop
 
+/**
+ * Parses the complex nested structure of [RoutesResponseDto] into a flattened list of [RouteLine].
+ * This function handles the transformation from line -> route variant -> stop sequence.
+ */
 internal fun parseRouteLines(response: RoutesResponseDto): List<RouteLine> =
 	response.result.entries.flatMap { (line, routeNames) ->
 		routeNames.entries.map { (routeName, stops) ->

@@ -12,8 +12,15 @@ import me.lenjoy.warsawtransportapp.api.model.StopLocation
 import me.lenjoy.warsawtransportapp.api.model.StopPoleNumber
 import me.lenjoy.warsawtransportapp.api.model.Vehicle
 
+/**
+ * Utility to convert [ValuesRowDto] into a [Map] of attributes.
+ */
 internal fun ValuesRowDto.toMap(): Map<String, String?> = values.asMap()
 
+/**
+ * Parses a raw time string from the API (e.g., "26:15:00") into a [ServiceTime] domain model.
+ * Handles hours >= 24 by incrementing the day offset.
+ */
 internal fun parseServiceTime(raw: String): ServiceTime? {
 	val parts = raw.split(":")
 	if (parts.size != 3) return null
@@ -29,6 +36,9 @@ internal fun parseServiceTime(raw: String): ServiceTime? {
 	)
 }
 
+/**
+ * Maps raw key-value data from the API into a [StopLocation] domain model.
+ */
 internal fun parseStopLocation(values: List<KeyValueDto>): StopLocation? {
 	val map = values.asMap()
 	val stopGroupId = map.string("zespol") ?: return null
@@ -46,11 +56,18 @@ internal fun parseStopLocation(values: List<KeyValueDto>): StopLocation? {
 	)
 }
 
+/**
+ * Parses a list of [ValuesRowDto] into a list of [StopLine] domain models.
+ */
 internal fun parseStopLines(rows: List<ValuesRowDto>): List<StopLine> =
 	rows.mapNotNull { row ->
 		row.toMap().string("linia")?.let { StopLine(LineNumber(it)) }
 	}
 
+/**
+ * Parses raw departure data from the API into a list of [Departure] domain models.
+ * Requires [routes] to resolve line numbers from route names.
+ */
 internal fun parseDepartures(rows: List<List<KeyValueDto>>, routes: List<RouteLine>): List<Departure> {
 	val list = rows.mapNotNull { row ->
 		val map = row.asMap()
@@ -71,6 +88,9 @@ internal fun parseDepartures(rows: List<List<KeyValueDto>>, routes: List<RouteLi
 	return list
 }
 
+/**
+ * Maps raw vehicle data fields into a [Vehicle] domain model.
+ */
 internal fun parseVehicleDto(
 	line: String,
 	lat: String,
@@ -88,5 +108,3 @@ internal fun parseVehicleDto(
 		brigade = brigade,
 	)
 }
-
-

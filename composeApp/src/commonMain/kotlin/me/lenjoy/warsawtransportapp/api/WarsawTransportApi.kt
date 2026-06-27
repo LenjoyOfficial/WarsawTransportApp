@@ -16,13 +16,42 @@ import me.lenjoy.warsawtransportapp.network.ApiKeyName
 import me.lenjoy.warsawtransportapp.network.ApiKeys
 import me.lenjoy.warsawtransportapp.network.createHttpClient
 
+/**
+ * Interface defining the available endpoints for the Warsaw Public Transport API.
+ * Provides access to routes, stop locations, and real-time departure data.
+ */
 interface WarsawTransportApi {
+	/**
+	 * Fetches all available transit routes and their stop sequences.
+	 */
 	suspend fun getRoutes(): RoutesResponseDto
+
+	/**
+	 * Fetches the physical locations and metadata for all transit stops.
+	 */
 	suspend fun getStopLocations(): List<ValuesRowDto>
+
+	/**
+	 * Fetches the list of lines serving a specific stop.
+	 *
+	 * @param stopGroupId The ID of the stop group (zespół przystankowy).
+	 * @param stopPoleNumber The specific pole number within the group.
+	 */
 	suspend fun getStopLines(stopGroupId: String, stopPoleNumber: String): List<ValuesRowDto>
+
+	/**
+	 * Fetches scheduled departures for a specific line at a specific stop.
+	 *
+	 * @param stopGroupId The ID of the stop group.
+	 * @param stopPoleNumber The specific pole number.
+	 * @param line The line number.
+	 */
 	suspend fun getDepartures(stopGroupId: String, stopPoleNumber: String, line: String): List<List<KeyValueDto>>
 }
 
+/**
+ * Real-time network implementation of [WarsawTransportApi] using Ktor.
+ */
 class WarsawTransportApiImpl(
 	private val client: HttpClient = createHttpClient(),
 ) : WarsawTransportApi {

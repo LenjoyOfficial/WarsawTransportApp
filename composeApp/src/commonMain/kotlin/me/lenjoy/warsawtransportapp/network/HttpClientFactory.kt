@@ -12,6 +12,10 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
+/**
+ * Extension function to apply standard HTTP client configuration.
+ * Sets up JSON serialization, logging, timeouts, and default headers.
+ */
 internal fun io.ktor.client.HttpClientConfig<*>.configure() {
 	install(ContentNegotiation) {
 		json(
@@ -34,5 +38,9 @@ internal fun io.ktor.client.HttpClientConfig<*>.configure() {
 	}
 }
 
+/**
+ * Platform-specific factory function to create a configured Ktor [HttpClient].
+ * - Android: uses OkHttp engine
+ * - iOS: uses Darwin engine
+ */
 expect fun createHttpClient(): HttpClient
-

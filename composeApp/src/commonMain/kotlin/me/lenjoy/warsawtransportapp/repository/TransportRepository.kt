@@ -14,13 +14,35 @@ import me.lenjoy.warsawtransportapp.api.parser.parseStopLines
 import me.lenjoy.warsawtransportapp.api.parser.parseStopLocation
 import me.lenjoy.warsawtransportapp.cache.platformFileSystem
 
+/**
+ * Main entry point for fetching transit data in the application.
+ * Returns domain models and hides implementation details like caching or raw API structure.
+ */
 interface TransportRepository {
+	/**
+	 * Returns all available routes.
+	 */
 	suspend fun getRoutes(): List<RouteLine>
+
+	/**
+	 * Returns all transit stop locations.
+	 */
 	suspend fun getAllStops(): List<StopLocation>
+
+	/**
+	 * Returns the list of lines serving a specific stop.
+	 */
 	suspend fun getStopLines(stopGroupId: String, stopPoleNumber: String): List<StopLine>
+
+	/**
+	 * Returns scheduled departures for a specific line at a stop.
+	 */
 	suspend fun getDepartures(stopGroupId: String, stopPoleNumber: String, line: String, routes: List<RouteLine>): List<Departure>
 }
 
+/**
+ * Implementation of [TransportRepository] that uses a cached API by default.
+ */
 class TransportRepositoryImpl(
 	private val api: WarsawTransportApi = CachedWarsawTransportApi(
 		delegate = WarsawTransportApiImpl(),
@@ -53,5 +75,3 @@ class TransportRepositoryImpl(
 		return parseDepartures(raw, routes)
 	}
 }
-
-
