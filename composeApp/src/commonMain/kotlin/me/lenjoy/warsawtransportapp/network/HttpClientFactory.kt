@@ -13,25 +13,25 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 internal fun io.ktor.client.HttpClientConfig<*>.configure() {
-    install(ContentNegotiation) {
-        json(
-            Json {
-                ignoreUnknownKeys = true
-                isLenient = true
-            }
-        )
-    }
-    install(Logging) {
-        level = LogLevel.INFO
-    }
-    install(HttpTimeout) {
-        requestTimeoutMillis = 15_000
-        connectTimeoutMillis = 15_000
-        socketTimeoutMillis = 15_000
-    }
-    defaultRequest {
-        header(HttpHeaders.Accept, ContentType.Application.Json)
-    }
+	install(ContentNegotiation) {
+		json(
+			Json {
+				ignoreUnknownKeys = true
+				isLenient = true
+			}
+		)
+	}
+	install(Logging) {
+		level = LogLevel.INFO
+	}
+	install(HttpTimeout) {
+		requestTimeoutMillis = 15_000
+		connectTimeoutMillis = 15_000
+		socketTimeoutMillis = 15_000
+	}
+	defaultRequest {
+		header(HttpHeaders.Accept, ContentType.Application.Json)
+	}
 }
 
 expect fun createHttpClient(): HttpClient

@@ -7,8 +7,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 
+import me.lenjoy.warsawtransportapp.cache.initCache
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        initCache(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 

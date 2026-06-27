@@ -4,6 +4,7 @@
 - **DTOs** = wire shapes from Warsaw API
 - **Domain models** = app-ready types
 - **Parsers** = DTO → domain converters
+- **Cache** = Persistent disk storage for API responses
 
 ---
 
@@ -152,43 +153,29 @@ parseRouteLines(response: RoutesResponseDto): List<RouteLine>
 
 ---
 
-## API Endpoints (4 total)
+## Caching System
 
-| Endpoint | Returns | Notes |
-|----------|---------|-------|
-| `public_transport_routes` | `RoutesResponseDto` | Routes + stop sequences |
-| `get_ztm_przystanki_komunikacji_miejskiej` | `List<ValuesRowDto>` | All stops with coords + direction |
-| `get_ztm_lista_linii_na_przystanku` | `List<ValuesRowDto>` | Lines at a stop (needs stopId + stopNr) |
-| `get_ztm_odjazdy_linii_z_przystanku` | `List<List<KeyValueDto>>` | Departures (needs stopId + stopNr + line) |
+Persistent disk caching layer with a 24-hour expiration policy.
 
----
-
-## Example: Parse Departure
+### `api.cache.CacheManager`
+Handles cross-platform file persistence using **Okio**.
+- Stores entries in `api_cache/` directory.
+- Each key has two files: `.json` (data) and `.time` (fetch timestamp).
+- **TTL**: 24 hours.
 
 ```kotlin
-// Raw from API (List<KeyValueDto>)
-val row = listOf(
-  KeyValueDto("linia", "116"),
-  KeyValueDto("kierunek", "Wilanów"),
-  KeyValueDto("czas", "26:15:00"),
-  KeyValueDto("brygada", "2"),
-  ...
-)
-
-// Parser
-val departure = parseDepartures(listOf(row)).first()
-// → Departure(
-//     line = LineNumber("116"),
-//     direction = "Wilanów",
-//     serviceTime = ServiceTime(raw="26:15:00", dayOffset=1, hourOfDay=2, minute=15, second=0),
-//     brigade = "2",
-//     ...
-//   )
+CacheManager(fileSystem: FileSystem) {
+  fun <T> save(key: String, data: T, serializer: KSerializer<T>)
+  fun <T> get(key: String, serializer: KSerializer<T>): T?
+}
 ```
 
----
+### `api.CachedWarsawTransportApi`
+A **Decorator** for `WarsawTransportApi` that intercepts calls to provide cached data.
+- **Hit**: Returns data from disk if timestamp is < 24h old.
+- **Miss**: Performs network request, saves result to disk, returns result.
 
-## Next: Repository + API Service
+---
 
 ## API Service (`api.WarsawTransportApi`)
 
@@ -203,10 +190,11 @@ interface WarsawTransportApi {
 }
 ```
 
-Used by `WarsawTransportApiImpl`:
-- Attaches API key automatically
-- Parses base URLs + params
-- No error handling (bubbles to caller)
+Implementations:
+- `WarsawTransportApiImpl`: The "live" network implementation.
+- `CachedWarsawTransportApi`: The caching wrapper (default used by repository).
+
+---
 
 ## Repository (`repository.TransportRepository`)
 
@@ -222,20 +210,30 @@ interface TransportRepository {
 ```
 
 Used by `TransportRepositoryImpl`:
-- Calls API methods
+- Calls API methods (via `CachedWarsawTransportApi`)
 - Maps DTOs → domain models
 - Ready for ViewModel consumption
 
-## Usage Flow
+---
+
+## Usage Flow (with Cache)
 
 ```
 UI (ViewModel)
   ↓ calls
 Repository.getDepartures(...)
-  ↓ calls + parses
-Api.getDepartures(...) → List<List<KeyValueDto>>
+  ↓ calls
+CachedApi.getDepartures(...)
+  ↓ check disk
+[ Disk Hit? ] → return DTO from disk
+[ Disk Miss? ]
+    ↓ calls network
+    ApiImpl.getDepartures(...) → DTO
+    ↓ saves to disk
+    CacheManager.save(DTO)
+    ↓ return DTO
   ↓ parses
-parseDepartures(...) → List<Departure>
+parseDepartures(DTO) → List<Departure>
   ↓ returns
 Repository → Departure (domain models)
   ↓ consumed

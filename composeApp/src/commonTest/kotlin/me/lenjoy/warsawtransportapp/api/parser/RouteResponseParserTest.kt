@@ -7,9 +7,9 @@ import kotlin.test.assertEquals
 
 class RouteResponseParserTest {
 
-    @Test
-    fun testParseRouteLinesSuccess() {
-        val response = ApiResultDto(
+	@Test
+	fun testParseRouteLinesSuccess() {
+		val response = ApiResultDto(
 			mapOf(
 				"1" to mapOf(
 					"TD-3BAN" to mapOf(
@@ -32,32 +32,32 @@ class RouteResponseParserTest {
 			)
 		)
 
-        val result = parseRouteLines(response)
+		val result = parseRouteLines(response)
 
-        assertEquals(1, result.size)
-        val routeLine = result[0]
-        assertEquals("1", routeLine.routeId)
-        assertEquals("TD-3BAN", routeLine.routeName)
-        assertEquals(2, routeLine.stops.size)
+		assertEquals(1, result.size)
+		val routeLine = result[0]
+		assertEquals("1", routeLine.line)
+		assertEquals("TD-3BAN", routeLine.routeName)
+		assertEquals(2, routeLine.stops.size)
 
-        val stop1 = routeLine.stops.find { it.sequence == 1 }
-        assertEquals("2513", stop1?.streetId)
-        assertEquals("R-03", stop1?.stopGroupId)
-        assertEquals("00", stop1?.stopPoleNumber)
-        assertEquals("6", stop1?.type)
-        assertEquals(0, stop1?.distanceMeters)
+		val stop1 = routeLine.stops.find { it.sequence == 1 }
+		assertEquals("2513", stop1?.streetId)
+		assertEquals("R-03", stop1?.stopGroupId)
+		assertEquals("00", stop1?.stopPoleNumber)
+		assertEquals("6", stop1?.type)
+		assertEquals(0, stop1?.distanceMeters)
 
-        val stop2 = routeLine.stops.find { it.sequence == 2 }
-        assertEquals("1205", stop2?.streetId)
-        assertEquals("3240", stop2?.stopGroupId)
-        assertEquals("04", stop2?.stopPoleNumber)
-        assertEquals("5", stop2?.type)
-        assertEquals(245, stop2?.distanceMeters)
-    }
+		val stop2 = routeLine.stops.find { it.sequence == 2 }
+		assertEquals("1205", stop2?.streetId)
+		assertEquals("3240", stop2?.stopGroupId)
+		assertEquals("04", stop2?.stopPoleNumber)
+		assertEquals("5", stop2?.type)
+		assertEquals(245, stop2?.distanceMeters)
+	}
 
-    @Test
-    fun testParseRouteLinesEmpty() {
-        val result = parseRouteLines(ApiResultDto(emptyMap()))
-        assertEquals(0, result.size)
-    }
+	@Test
+	fun testParseRouteLinesEmpty() {
+		val result = parseRouteLines(ApiResultDto(emptyMap()))
+		assertEquals(0, result.size)
+	}
 }
