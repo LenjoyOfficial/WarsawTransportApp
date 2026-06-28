@@ -1,0 +1,16 @@
+<resources>
+	<string name="nav_search">Szukaj</string>
+	<string name="nav_favorites">Ulubione</string>
+	<string name="nav_map">Mapa</string>
+	<string name="nav_settings">Ustawienia</string>
+	<string name="selected_label">Wybrano: %s</string>
+	<string name="settings_appearance">Wygląd</string>
+	<string name="settings_appearance_desc">Wybierz preferencje motywu</string>
+	<string name="theme_light">Jasny</string>
+	<string name="theme_dark">Ciemny</string>
+	<string name="theme_system">Domyślny systemowy</string>
+	<string name="settings_language">Język</string>
+	<string name="settings_language_desc">Wybierz preferowany język</string>
+	<string name="language_english">Angielski</string>
+	<string name="language_polish">Polski</string>
+</resources>
