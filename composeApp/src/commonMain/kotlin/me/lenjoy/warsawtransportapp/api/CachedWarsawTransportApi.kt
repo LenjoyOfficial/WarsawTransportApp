@@ -1,5 +1,6 @@
 package me.lenjoy.warsawtransportapp.api
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -8,7 +9,6 @@ import me.lenjoy.warsawtransportapp.api.dto.KeyValueDto
 import me.lenjoy.warsawtransportapp.api.dto.RoutesResponseDto
 import me.lenjoy.warsawtransportapp.api.dto.ValuesRowDto
 import me.lenjoy.warsawtransportapp.api.dto.RouteStopDto
-import okio.FileSystem
 
 /**
  * A Decorator for [WarsawTransportApi] that adds a persistent disk caching layer.
@@ -21,8 +21,7 @@ class CachedWarsawTransportApi(
 ) : WarsawTransportApi {
 
     override suspend fun getRoutes(): RoutesResponseDto {
-        val key = "routes"
-        val serializer = RoutesResponseDto.serializer(
+        return withCache("routes", RoutesResponseDto.serializer(
             MapSerializer(
                 String.serializer(),
                 MapSerializer(
@@ -33,44 +32,20 @@ class CachedWarsawTransportApi(
                     )
                 )
             )
-        )
-        val cached = cacheManager.get(key, serializer)
-        if (cached != null) {
-            println("Cache HIT for $key")
-            return cached
-        }
-        println("Cache MISS for $key")
-        val result = delegate.getRoutes()
-        cacheManager.save(key, result, serializer)
-        return result
+        )) { delegate.getRoutes() }
     }
 
     override suspend fun getStopLocations(): List<ValuesRowDto> {
-        val key = "stop_locations"
-        val serializer = ListSerializer(ValuesRowDto.serializer())
-        val cached = cacheManager.get(key, serializer)
-        if (cached != null) {
-            println("Cache HIT for $key")
-            return cached
+        return withCache("stop_locations", ListSerializer(ValuesRowDto.serializer())) {
+            delegate.getStopLocations()
         }
-        println("Cache MISS for $key")
-        val result = delegate.getStopLocations()
-        cacheManager.save(key, result, serializer)
-        return result
     }
 
     override suspend fun getStopLines(stopGroupId: String, stopPoleNumber: String): List<ValuesRowDto> {
         val key = "stop_lines_${stopGroupId}_${stopPoleNumber}"
-        val serializer = ListSerializer(ValuesRowDto.serializer())
-        val cached = cacheManager.get(key, serializer)
-        if (cached != null) {
-            println("Cache HIT for $key")
-            return cached
+        return withCache(key, ListSerializer(ValuesRowDto.serializer())) {
+            delegate.getStopLines(stopGroupId, stopPoleNumber)
         }
-        println("Cache MISS for $key")
-        val result = delegate.getStopLines(stopGroupId, stopPoleNumber)
-        cacheManager.save(key, result, serializer)
-        return result
     }
 
     override suspend fun getDepartures(
@@ -80,13 +55,23 @@ class CachedWarsawTransportApi(
     ): List<List<KeyValueDto>> {
         val key = "departures_${stopGroupId}_${stopPoleNumber}_${line}"
         val serializer = ListSerializer(ListSerializer(KeyValueDto.serializer()))
+        return withCache(key, serializer) {
+            delegate.getDepartures(stopGroupId, stopPoleNumber, line)
+        }
+    }
+
+    private suspend fun <T> withCache(
+        key: String,
+        serializer: KSerializer<T>,
+        fetch: suspend () -> T
+    ): T {
         val cached = cacheManager.get(key, serializer)
         if (cached != null) {
             println("Cache HIT for $key")
             return cached
         }
         println("Cache MISS for $key")
-        val result = delegate.getDepartures(stopGroupId, stopPoleNumber, line)
+        val result = fetch()
         cacheManager.save(key, result, serializer)
         return result
     }
