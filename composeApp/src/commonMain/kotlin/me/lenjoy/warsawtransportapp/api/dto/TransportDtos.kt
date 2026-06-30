@@ -12,6 +12,23 @@ data class ApiResultDto<T>(
 )
 
 /**
+ * A simple key-value pair used in many Warsaw API responses where data is returned as a list of attributes.
+ */
+@Serializable
+data class KeyValueDto(
+	val key: String,
+	val value: String? = null,
+)
+
+/**
+ * Represents a single row of data from the API, composed of multiple [KeyValueDto] objects.
+ */
+@Serializable
+data class ValuesRowDto(
+	val values: List<KeyValueDto>,
+)
+
+/**
  * Data Transfer Object representing a vehicle's real-time position and state.
  *
  * @property lines The transit line number.
@@ -29,23 +46,6 @@ data class VehicleDto(
 	@SerialName("VehicleNumber") val vehicleNumber: String,
 	@SerialName("Time") val time: String,
 	@SerialName("Brigade") val brigade: String,
-)
-
-/**
- * A simple key-value pair used in many Warsaw API responses where data is returned as a list of attributes.
- */
-@Serializable
-data class KeyValueDto(
-	val key: String,
-	val value: String? = null,
-)
-
-/**
- * Represents a single row of data from the API, composed of multiple [KeyValueDto] objects.
- */
-@Serializable
-data class ValuesRowDto(
-	val values: List<KeyValueDto>,
 )
 
 /**

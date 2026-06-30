@@ -9,7 +9,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 
 private val lightScheme = lightColorScheme(
@@ -283,24 +283,49 @@ fun AppTheme(
 
 @Composable
 fun animateColorScheme(targetScheme: ColorScheme): ColorScheme {
-	val animationSpec = tween<Color>(durationMillis = 300)
+	val animationSpec = remember { tween<Color>(durationMillis = 300) }
 
-	val primary by animateColorAsState(targetScheme.primary, animationSpec)
-	val background by animateColorAsState(targetScheme.background, animationSpec)
-	val surface by animateColorAsState(targetScheme.surface, animationSpec)
-	val onSurface by animateColorAsState(targetScheme.onSurface, animationSpec)
-	val surfaceVariant by animateColorAsState(targetScheme.surfaceVariant, animationSpec)
-	val onSurfaceVariant by animateColorAsState(targetScheme.onSurfaceVariant, animationSpec)
-	val surfaceContainer by animateColorAsState(targetScheme.surfaceContainer, animationSpec)
-	// ... animate other colors (secondary, error, etc.) if needed
+	@Composable
+	fun animateColor(color: Color, label: String): Color {
+		return animateColorAsState(targetValue = color, animationSpec = animationSpec, label = label).value
+	}
 
 	return targetScheme.copy(
-		primary = primary,
-		background = background,
-		surface = surface,
-		onSurface = onSurface,
-		surfaceVariant = surfaceVariant,
-		onSurfaceVariant = onSurfaceVariant,
-		surfaceContainer = surfaceContainer
+		primary = animateColor(targetScheme.primary, "primary"),
+		onPrimary = animateColor(targetScheme.onPrimary, "onPrimary"),
+		primaryContainer = animateColor(targetScheme.primaryContainer, "primaryContainer"),
+		onPrimaryContainer = animateColor(targetScheme.onPrimaryContainer, "onPrimaryContainer"),
+		inversePrimary = animateColor(targetScheme.inversePrimary, "inversePrimary"),
+		secondary = animateColor(targetScheme.secondary, "secondary"),
+		onSecondary = animateColor(targetScheme.onSecondary, "onSecondary"),
+		secondaryContainer = animateColor(targetScheme.secondaryContainer, "secondaryContainer"),
+		onSecondaryContainer = animateColor(targetScheme.onSecondaryContainer, "onSecondaryContainer"),
+		tertiary = animateColor(targetScheme.tertiary, "tertiary"),
+		onTertiary = animateColor(targetScheme.onTertiary, "onTertiary"),
+		tertiaryContainer = animateColor(targetScheme.tertiaryContainer, "tertiaryContainer"),
+		onTertiaryContainer = animateColor(targetScheme.onTertiaryContainer, "onTertiaryContainer"),
+		background = animateColor(targetScheme.background, "background"),
+		onBackground = animateColor(targetScheme.onBackground, "onBackground"),
+		surface = animateColor(targetScheme.surface, "surface"),
+		onSurface = animateColor(targetScheme.onSurface, "onSurface"),
+		surfaceVariant = animateColor(targetScheme.surfaceVariant, "surfaceVariant"),
+		onSurfaceVariant = animateColor(targetScheme.onSurfaceVariant, "onSurfaceVariant"),
+		surfaceTint = animateColor(targetScheme.surfaceTint, "surfaceTint"),
+		inverseSurface = animateColor(targetScheme.inverseSurface, "inverseSurface"),
+		inverseOnSurface = animateColor(targetScheme.inverseOnSurface, "inverseOnSurface"),
+		error = animateColor(targetScheme.error, "error"),
+		onError = animateColor(targetScheme.onError, "onError"),
+		errorContainer = animateColor(targetScheme.errorContainer, "errorContainer"),
+		onErrorContainer = animateColor(targetScheme.onErrorContainer, "onErrorContainer"),
+		outline = animateColor(targetScheme.outline, "outline"),
+		outlineVariant = animateColor(targetScheme.outlineVariant, "outlineVariant"),
+		scrim = animateColor(targetScheme.scrim, "scrim"),
+		surfaceBright = animateColor(targetScheme.surfaceBright, "surfaceBright"),
+		surfaceDim = animateColor(targetScheme.surfaceDim, "surfaceDim"),
+		surfaceContainer = animateColor(targetScheme.surfaceContainer, "surfaceContainer"),
+		surfaceContainerHigh = animateColor(targetScheme.surfaceContainerHigh, "surfaceContainerHigh"),
+		surfaceContainerHighest = animateColor(targetScheme.surfaceContainerHighest, "surfaceContainerHighest"),
+		surfaceContainerLow = animateColor(targetScheme.surfaceContainerLow, "surfaceContainerLow"),
+		surfaceContainerLowest = animateColor(targetScheme.surfaceContainerLowest, "surfaceContainerLowest"),
 	)
 }

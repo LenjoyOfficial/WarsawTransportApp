@@ -6,6 +6,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.key
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
 import java.util.Locale
 
 @Composable
@@ -14,7 +15,8 @@ actual fun LanguageProvider(lang: String, content: @Composable () -> Unit) {
 	val currentConfiguration = LocalConfiguration.current
 
 	val targetLocale = Locale.forLanguageTag(lang)
-	Locale.setDefault(targetLocale)
+	if (LocalLocale.current.platformLocale != targetLocale)
+		Locale.setDefault(targetLocale)
 
 	val configuration = Configuration(currentConfiguration).apply {
 		setLocale(targetLocale)

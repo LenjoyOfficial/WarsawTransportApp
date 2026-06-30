@@ -48,19 +48,8 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 			.background(MaterialTheme.colorScheme.background)
 	) {
 		// Appearance Section
-		Text(
-			text = stringResource(Res.string.settings_appearance),
-			style = MaterialTheme.typography.titleMedium,
-			fontWeight = FontWeight.Bold,
-			color = MaterialTheme.colorScheme.primary,
-			modifier = Modifier.padding(bottom = 8.dp)
-		)
-		Text(
-			text = stringResource(Res.string.settings_appearance_desc),
-			style = MaterialTheme.typography.bodyMedium,
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
-			modifier = Modifier.padding(bottom = 16.dp)
-		)
+		SettingTitle(stringResource(Res.string.settings_appearance))
+		SettingDescription(stringResource(Res.string.settings_appearance_desc))
 
 		Surface(
 			color = MaterialTheme.colorScheme.surfaceVariant,
@@ -74,20 +63,14 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 					selected = themeConfig == ThemeConfig.LIGHT,
 					onClick = { themeConfig = ThemeConfig.LIGHT }
 				)
-				HorizontalDivider(
-					modifier = Modifier.padding(horizontal = 20.dp),
-					color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
-				)
+				OptionDivider()
 				ThemeItem(
 					icon = Icons.Default.DarkMode,
 					name = stringResource(Res.string.theme_dark),
 					selected = themeConfig == ThemeConfig.DARK,
 					onClick = { themeConfig = ThemeConfig.DARK }
 				)
-				HorizontalDivider(
-					modifier = Modifier.padding(horizontal = 20.dp),
-					color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
-				)
+				OptionDivider()
 				ThemeItem(
 					icon = Icons.Default.SettingsSuggest,
 					name = stringResource(Res.string.theme_system),
@@ -100,19 +83,8 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 		Spacer(modifier = Modifier.padding(top = 24.dp))
 
 		// Language Section
-		Text(
-			text = stringResource(Res.string.settings_language),
-			style = MaterialTheme.typography.titleMedium,
-			fontWeight = FontWeight.Bold,
-			color = MaterialTheme.colorScheme.primary,
-			modifier = Modifier.padding(bottom = 8.dp)
-		)
-		Text(
-			text = stringResource(Res.string.settings_language_desc),
-			style = MaterialTheme.typography.bodyMedium,
-			color = MaterialTheme.colorScheme.onSurfaceVariant,
-			modifier = Modifier.padding(bottom = 16.dp)
-		)
+		SettingTitle(stringResource(Res.string.settings_language))
+		SettingDescription(stringResource(Res.string.settings_language_desc))
 
 		Surface(
 			color = MaterialTheme.colorScheme.surfaceVariant,
@@ -126,10 +98,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 					selected = language == "en",
 					onClick = { language = "en" }
 				)
-				HorizontalDivider(
-					modifier = Modifier.padding(horizontal = 20.dp),
-					color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
-				)
+				OptionDivider()
 				LanguageItem(
 					flag = "🇵🇱",
 					name = "Polski",
@@ -139,6 +108,39 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 			}
 		}
 	}
+}
+
+@Composable
+fun SettingTitle(
+	text: String
+) {
+	Text(
+		text = text,
+		style = MaterialTheme.typography.titleMedium,
+		fontWeight = FontWeight.Bold,
+		color = MaterialTheme.colorScheme.primary,
+		modifier = Modifier.padding(bottom = 8.dp)
+	)
+}
+
+@Composable
+fun SettingDescription(
+	text: String
+) {
+	Text(
+		text = text,
+		style = MaterialTheme.typography.bodyMedium,
+		color = MaterialTheme.colorScheme.onSurfaceVariant,
+		modifier = Modifier.padding(bottom = 16.dp)
+	)
+}
+
+@Composable
+fun OptionDivider() {
+	HorizontalDivider(
+		modifier = Modifier.padding(horizontal = 20.dp),
+		color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
+	)
 }
 
 @Composable

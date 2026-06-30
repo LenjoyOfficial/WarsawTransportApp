@@ -1,4 +1,4 @@
-package me.lenjoy.warsawtransportapp.ui
+package me.lenjoy.warsawtransportapp.ui.search
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,10 +9,10 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun SearchScreen(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Search Screen")
-    }
+	Box(
+		modifier = modifier.fillMaxSize(),
+		contentAlignment = Alignment.Center
+	) {
+		Text("Search Screen")
+	}
 }
