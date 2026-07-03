@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -42,9 +43,11 @@ import warsawtransportapp.composeapp.generated.resources.theme_light
 import warsawtransportapp.composeapp.generated.resources.theme_system
 
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
+fun SettingsScreen() {
 	Column(
-		modifier = modifier
+		modifier = Modifier
+			.fillMaxSize()
+			.padding(16.dp)
 			.background(MaterialTheme.colorScheme.background)
 	) {
 		// Appearance Section

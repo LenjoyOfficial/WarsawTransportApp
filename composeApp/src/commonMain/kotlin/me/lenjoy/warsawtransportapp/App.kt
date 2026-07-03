@@ -20,16 +20,19 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
 import kotlinx.coroutines.async
-import me.lenjoy.warsawtransportapp.i18n.LanguageProvider
+import kotlinx.serialization.Serializable
 import me.lenjoy.warsawtransportapp.api.model.StopLocation
+import me.lenjoy.warsawtransportapp.i18n.LanguageProvider
 import me.lenjoy.warsawtransportapp.repository.TransportRepositoryImpl
 import me.lenjoy.warsawtransportapp.ui.FavouritesScreen
 import me.lenjoy.warsawtransportapp.ui.MapScreen
@@ -55,6 +58,28 @@ sealed class Screen(val name: StringResource, val icon: ImageVector) {
 	data class StopDetail(val stop: StopLocation) : Screen(Res.string.nav_search, Icons.Default.Search)
 }
 
+@Serializable
+sealed interface Route {
+	@Serializable
+	object Search : Route
+
+	@Serializable
+	object Favourites : Route
+
+	@Serializable
+	object Map : Route
+
+	@Serializable
+	object Settings : Route
+
+	@Serializable
+	data class StopDetail(
+		val stopGroupId: String,
+		val stopPoleNumber: String,
+		val stopName: String
+	) : Route
+}
+
 var language by mutableStateOf("en") // "en" or "pl"
 var themeConfig by mutableStateOf(ThemeConfig.SYSTEM)
 
@@ -74,7 +99,7 @@ fun App() {
 		isLoading = false
 	}
 
-	var currentScreen by remember { mutableStateOf<Screen>(Screen.Search) }
+	val backStack = remember { mutableStateListOf<Screen>(Screen.Search) }
 	val screens = listOf(
 		Screen.Search,
 		Screen.Favourites,
@@ -86,16 +111,16 @@ fun App() {
 		AppTheme(themeConfig = themeConfig) {
 			Scaffold(
 				topBar = {
-					if (currentScreen == Screen.Settings)
+					if (backStack.last() == Screen.Settings)
 						TopAppBar(
-							title = { Text(stringResource(currentScreen.name)) },
+							title = { Text(stringResource(backStack.last().name)) },
 							colors = TopAppBarDefaults.topAppBarColors(
 								containerColor = MaterialTheme.colorScheme.surfaceVariant
 							)
 						)
 					else {
 						GlobalSearchBar(isLoading, stops) { stop ->
-							currentScreen = Screen.StopDetail(stop)
+							backStack.add(Screen.StopDetail(stop))
 						}
 					}
 				},
@@ -105,8 +130,8 @@ fun App() {
 							NavigationBarItem(
 								icon = { Icon(screen.icon, contentDescription = null) },
 								label = { Text(stringResource(screen.name)) },
-								selected = currentScreen == screen,
-								onClick = { currentScreen = screen }
+								selected = backStack.last() == screen,
+								onClick = { backStack.set(0, screen) }
 							)
 						}
 					}
@@ -117,7 +142,28 @@ fun App() {
 						.fillMaxSize()
 						.padding(paddingValues)
 				) {
-					when (currentScreen) {
+					NavDisplay(
+						backStack = backStack,
+						entryProvider = { screen ->
+							when (screen) {
+								Screen.Search -> NavEntry(screen) { SearchScreen() }
+								Screen.Favourites -> NavEntry(screen) { FavouritesScreen() }
+								Screen.Map -> NavEntry(screen) { MapScreen() }
+								Screen.Settings -> NavEntry(screen) { SettingsScreen() }
+								is Screen.StopDetail -> NavEntry(screen) {
+									val stop = screen.stop
+									StopDetailScreen(
+										stopGroupId = stop.stopGroupId.value,
+										stopPoleNumber = stop.stopPoleNumber.value,
+										stopName = stop.stopName,
+										repository = api,
+										onBack = { }
+									)
+								}
+							}
+						},
+					)
+					/*when (currentScreen) {
 						Screen.Search -> SearchScreen(
 							modifier = Modifier
 								.fillMaxSize()
@@ -148,7 +194,7 @@ fun App() {
 								onBack = { currentScreen = Screen.Search }
 							)
 						}
-					}
+					}*/
 				}
 			}
 		}
