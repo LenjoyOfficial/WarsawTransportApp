@@ -12,8 +12,7 @@ import io.ktor.http.HttpHeaders
 import me.lenjoy.warsawtransportapp.api.dto.KeyValueDto
 import me.lenjoy.warsawtransportapp.api.dto.RoutesResponseDto
 import me.lenjoy.warsawtransportapp.api.dto.ValuesRowDto
-import me.lenjoy.warsawtransportapp.network.ApiKeyName
-import me.lenjoy.warsawtransportapp.network.ApiKeys
+import me.lenjoy.warsawtransportapp.config.BuildKonfig
 import me.lenjoy.warsawtransportapp.network.createHttpClient
 
 /**
@@ -57,8 +56,8 @@ class WarsawTransportApiImpl(
 ) : WarsawTransportApi {
 	private val legacyUrl = "https://api.um.warszawa.pl/api/action"
 	private val daneUrl = "https://dane.um.warszawa.pl/api/action"
-	private val legacyKey = ApiKeys.get(ApiKeyName.LEGACY)
-	private val apiKey = ApiKeys.get(ApiKeyName.ZTM)
+	private val legacyKey = BuildKonfig.LEGACY_API_KEY
+	private val apiKey = BuildKonfig.ZTM_API_KEY
 
 	override suspend fun getRoutes(): RoutesResponseDto {
 		val response = client.get("$legacyUrl/public_transport_routes/") {

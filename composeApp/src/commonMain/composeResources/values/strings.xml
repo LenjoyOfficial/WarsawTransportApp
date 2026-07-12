@@ -13,4 +13,6 @@
 	<string name="settings_language_desc">Select your preferred language</string>
 	<string name="language_english">English</string>
 	<string name="language_polish">Polish</string>
+	<string name="location_permission_denied">Location permission is required to center the map on your location.</string>
+	<string name="error_fetching_data">Error fetching data. Please check your connection.</string>
 </resources>
