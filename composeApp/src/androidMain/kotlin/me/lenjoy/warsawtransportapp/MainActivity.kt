@@ -12,6 +12,7 @@ import me.lenjoy.warsawtransportapp.cache.initCache
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         initCache(this)
+        initPlatform(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 

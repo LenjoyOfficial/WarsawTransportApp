@@ -22,6 +22,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,6 +43,9 @@ import me.lenjoy.warsawtransportapp.api.model.LineNumber
 import me.lenjoy.warsawtransportapp.api.model.ServiceTime
 import me.lenjoy.warsawtransportapp.repository.TransportRepository
 import me.lenjoy.warsawtransportapp.ui.theme.AppTheme
+import org.jetbrains.compose.resources.stringResource
+import warsawtransportapp.composeapp.generated.resources.Res
+import warsawtransportapp.composeapp.generated.resources.error_fetching_data
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +58,8 @@ fun StopDetailScreen(
 ) {
 	var departures by remember { mutableStateOf<List<Departure>?>(null) }
 	var isLoading by remember { mutableStateOf(true) }
+	val snackbarHostState = remember { SnackbarHostState() }
+	val errorMessage = stringResource(Res.string.error_fetching_data)
 
 	LaunchedEffect(stopGroupId, stopPoleNumber) {
 		isLoading = true
@@ -73,7 +80,7 @@ fun StopDetailScreen(
 			}
 			departures = allDepartures.sortedBy { it.serviceTime.hourOfDay * 60 + it.serviceTime.minute }
 		} catch (e: Exception) {
-			// Handle error
+			snackbarHostState.showSnackbar(errorMessage)
 		} finally {
 			isLoading = false
 		}
@@ -95,7 +102,8 @@ fun StopDetailScreen(
 					containerColor = MaterialTheme.colorScheme.surfaceVariant
 				)
 			)
-		}
+		},
+		snackbarHost = { SnackbarHost(snackbarHostState) }
 	) { innerPadding ->
 		StopDetailContent(
 			stopName = stopName,

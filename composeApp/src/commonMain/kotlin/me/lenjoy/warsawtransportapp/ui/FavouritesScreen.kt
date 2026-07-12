@@ -11,12 +11,5 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun FavouritesScreen() {
-	Box(
-		modifier = Modifier
-			.fillMaxSize()
-			.padding(16.dp),
-		contentAlignment = Alignment.Center
-	) {
-		Text("Favourites Screen")
-	}
+	Text("Favourites Screen")
 }

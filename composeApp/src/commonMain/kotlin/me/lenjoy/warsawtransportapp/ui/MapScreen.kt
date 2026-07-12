@@ -11,12 +11,5 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun MapScreen() {
-	Box(
-		modifier = Modifier
-			.fillMaxSize()
-			.padding(16.dp),
-		contentAlignment = Alignment.Center
-	) {
-		Text("Map Screen")
-	}
+	Text("Map Screen")
 }

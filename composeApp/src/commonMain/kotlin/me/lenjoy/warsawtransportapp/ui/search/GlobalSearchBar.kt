@@ -36,77 +36,77 @@ import me.lenjoy.warsawtransportapp.util.normalizeForSearch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GlobalSearchBar(
-	isLoading: Boolean,
-	stops: List<StopLocation>,
-	onStopSelected: (StopLocation) -> Unit = {}
+    isLoading: Boolean,
+    stops: List<StopLocation>,
+    onStopSelected: (StopLocation) -> Unit = {}
 ) {
-	val textFieldState = rememberTextFieldState()
-	val searchBarState = rememberSearchBarState()
-	val scope = rememberCoroutineScope()
-	val isExpanded = searchBarState.currentValue == SearchBarValue.Expanded
+    val textFieldState = rememberTextFieldState()
+    val searchBarState = rememberSearchBarState()
+    val scope = rememberCoroutineScope()
+    val isExpanded = searchBarState.currentValue == SearchBarValue.Expanded
 
-	val filteredStops by remember(stops) {
-		derivedStateOf {
-			val query = textFieldState.text.toString().normalizeForSearch()
-			if (query.isEmpty()) emptyList()
-			else stops.filter { it.stopName.normalizeForSearch().contains(query) }
-				.sortedBy { it.stopName }
-		}
-	}
+    val filteredStops by remember(stops) {
+        derivedStateOf {
+            val query = textFieldState.text.toString().normalizeForSearch()
+            if (query.isEmpty()) emptyList()
+            else stops.filter { it.stopName.normalizeForSearch().contains(query) }
+                .sortedBy { it.stopName }
+        }
+    }
 
-	val inputField = @Composable {
-		SearchBarDefaults.InputField(
-			textFieldState = textFieldState,
-			searchBarState = searchBarState,
-			onSearch = {},
-			placeholder = { Text("Search for stops") },
-			leadingIcon = {
-				if (isLoading) {
-					CircularProgressIndicator(
-						modifier = Modifier.size(24.dp),
-						strokeWidth = 2.dp
-					)
-				} else {
-					Icon(Icons.Default.Search, contentDescription = null)
-				}
-			}
-		)
-	}
+    val inputField = @Composable {
+        SearchBarDefaults.InputField(
+            textFieldState = textFieldState,
+            searchBarState = searchBarState,
+            onSearch = {},
+            placeholder = { Text("Search for stops") },
+            leadingIcon = {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(Icons.Default.Search, contentDescription = null)
+                }
+            }
+        )
+    }
 
-	AppBarWithSearch(
-		inputField = inputField,
-		state = searchBarState,
-	)
-	ExpandedFullScreenSearchBar(
-		state = searchBarState,
-		inputField = inputField,
-		content = {
-			LazyColumn {
-				items(filteredStops) { stop ->
-					Row(
-						modifier = Modifier
-							.fillMaxWidth()
-							.clickable {
-								onStopSelected(stop)
-								scope.launch {
-									searchBarState.animateToCollapsed()
-								}
-							}
-							.padding(16.dp),
-						verticalAlignment = Alignment.CenterVertically
-					) {
-						Text(
-							text = "${stop.stopName} ${stop.stopPoleNumber.value}",
-							modifier = Modifier.weight(1f)
-						)
-						Icon(
-							imageVector = Icons.Default.Map,
-							contentDescription = null
-						)
-					}
-					HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-				}
-			}
-		}
-	)
+    AppBarWithSearch(
+        inputField = inputField,
+        state = searchBarState,
+    )
+    ExpandedFullScreenSearchBar(
+        state = searchBarState,
+        inputField = inputField,
+        content = {
+            LazyColumn {
+                items(filteredStops) { stop ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onStopSelected(stop)
+                                scope.launch {
+                                    searchBarState.animateToCollapsed()
+                                }
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${stop.stopName} ${stop.stopPoleNumber.value}",
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Map,
+                            contentDescription = null
+                        )
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                }
+            }
+        }
+    )
 }
