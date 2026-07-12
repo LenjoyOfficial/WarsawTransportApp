@@ -1,9 +1,12 @@
 # Project: WarsawTransportApp
 
 ## Overview
-WarsawTransportApp is a Kotlin Multiplatform (KMP) application for real-time and scheduled public transport info in Warsaw. Shared logic for networking, parsing, and caching.
+
+WarsawTransportApp is a Kotlin Multiplatform (KMP) application for real-time and scheduled public
+transport info in Warsaw. Shared logic for networking, parsing, and caching.
 
 ## Tech Stack
+
 - **Language**: Kotlin 2.1.0
 - **UI**: Compose Multiplatform
 - **Network**: Ktor (Darwin/OkHttp)
@@ -12,7 +15,8 @@ WarsawTransportApp is a Kotlin Multiplatform (KMP) application for real-time and
 - **Date/Time**: Kotlinx Datetime
 
 ## Project Structure
-- `commonMain`: 
+
+- `commonMain`:
     - `api/`: Transport API, DTOs, parsers.
     - `api/cache/`: Disk caching layer.
     - `network/`: Ktor config + keys.
@@ -21,16 +25,21 @@ WarsawTransportApp is a Kotlin Multiplatform (KMP) application for real-time and
 - `iosApp/`: SwiftUI entry point.
 
 ## Documentation
+
 - `docs/DATA_MODEL.md`: Domain models and data structures.
 - `docs/API_DOCUMENTATION.md`: ZTM Warsaw API details.
 
 ## Goals
+
 1. **KMP Efficiency**: Maximize shared code.
 2. **Offline-First**: Disk cache for API data.
 3. **Accuracy**: Real-time ZTM Warsaw data.
 4. **Clean Arch**: Separate API, domain, and UI.
 
 ## Agent Guidelines
+
 - **KMP First**: Logic → `commonMain`.
 - **Cache**: Wrap new API calls in `CachedWarsawTransportApi`.
 - **Consistency**: Follow DTO-to-Model mapping patterns.
+- **Tabulators**: Use 4-space tabulators
+- 
