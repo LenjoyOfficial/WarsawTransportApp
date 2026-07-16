@@ -41,5 +41,4 @@ transport info in Warsaw. Shared logic for networking, parsing, and caching.
 - **KMP First**: Logic → `commonMain`.
 - **Cache**: Wrap new API calls in `CachedWarsawTransportApi`.
 - **Consistency**: Follow DTO-to-Model mapping patterns.
-- **Tabulators**: Use 4-space tabulators
-- 
+- **Indentation**: Use tabulators for indenting code

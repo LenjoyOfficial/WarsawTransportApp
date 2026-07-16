@@ -43,171 +43,171 @@ import warsawtransportapp.composeapp.generated.resources.theme_system
 
 @Composable
 fun SettingsScreen() {
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Appearance Section
-        SettingTitle(stringResource(Res.string.settings_appearance))
-        SettingDescription(stringResource(Res.string.settings_appearance_desc))
+	Column(
+		modifier = Modifier.fillMaxSize()
+	) {
+		// Appearance Section
+		SettingTitle(stringResource(Res.string.settings_appearance))
+		SettingDescription(stringResource(Res.string.settings_appearance_desc))
 
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column {
-                ThemeItem(
-                    icon = Icons.Default.LightMode,
-                    name = stringResource(Res.string.theme_light),
-                    selected = themeConfig == ThemeConfig.LIGHT,
-                    onClick = { themeConfig = ThemeConfig.LIGHT }
-                )
-                OptionDivider()
-                ThemeItem(
-                    icon = Icons.Default.DarkMode,
-                    name = stringResource(Res.string.theme_dark),
-                    selected = themeConfig == ThemeConfig.DARK,
-                    onClick = { themeConfig = ThemeConfig.DARK }
-                )
-                OptionDivider()
-                ThemeItem(
-                    icon = Icons.Default.SettingsSuggest,
-                    name = stringResource(Res.string.theme_system),
-                    selected = themeConfig == ThemeConfig.SYSTEM,
-                    onClick = { themeConfig = ThemeConfig.SYSTEM }
-                )
-            }
-        }
+		Surface(
+			color = MaterialTheme.colorScheme.surfaceVariant,
+			shape = RoundedCornerShape(12.dp),
+			modifier = Modifier.fillMaxWidth()
+		) {
+			Column {
+				ThemeItem(
+					icon = Icons.Default.LightMode,
+					name = stringResource(Res.string.theme_light),
+					selected = themeConfig == ThemeConfig.LIGHT,
+					onClick = { themeConfig = ThemeConfig.LIGHT }
+				)
+				OptionDivider()
+				ThemeItem(
+					icon = Icons.Default.DarkMode,
+					name = stringResource(Res.string.theme_dark),
+					selected = themeConfig == ThemeConfig.DARK,
+					onClick = { themeConfig = ThemeConfig.DARK }
+				)
+				OptionDivider()
+				ThemeItem(
+					icon = Icons.Default.SettingsSuggest,
+					name = stringResource(Res.string.theme_system),
+					selected = themeConfig == ThemeConfig.SYSTEM,
+					onClick = { themeConfig = ThemeConfig.SYSTEM }
+				)
+			}
+		}
 
-        Spacer(modifier = Modifier.padding(top = 24.dp))
+		Spacer(modifier = Modifier.padding(top = 24.dp))
 
-        // Language Section
-        SettingTitle(stringResource(Res.string.settings_language))
-        SettingDescription(stringResource(Res.string.settings_language_desc))
+		// Language Section
+		SettingTitle(stringResource(Res.string.settings_language))
+		SettingDescription(stringResource(Res.string.settings_language_desc))
 
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column {
-                LanguageItem(
-                    flag = "🇬🇧",
-                    name = "English",
-                    selected = language == "en",
-                    onClick = { language = "en" }
-                )
-                OptionDivider()
-                LanguageItem(
-                    flag = "🇵🇱",
-                    name = "Polski",
-                    selected = language == "pl",
-                    onClick = { language = "pl" }
-                )
-            }
-        }
-    }
+		Surface(
+			color = MaterialTheme.colorScheme.surfaceVariant,
+			shape = RoundedCornerShape(12.dp),
+			modifier = Modifier.fillMaxWidth()
+		) {
+			Column {
+				LanguageItem(
+					flag = "🇬🇧",
+					name = "English",
+					selected = language == "en",
+					onClick = { language = "en" }
+				)
+				OptionDivider()
+				LanguageItem(
+					flag = "🇵🇱",
+					name = "Polski",
+					selected = language == "pl",
+					onClick = { language = "pl" }
+				)
+			}
+		}
+	}
 }
 
 @Composable
 fun SettingTitle(
-    text: String
+	text: String
 ) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(bottom = 8.dp)
-    )
+	Text(
+		text = text,
+		style = MaterialTheme.typography.titleMedium,
+		fontWeight = FontWeight.Bold,
+		color = MaterialTheme.colorScheme.primary,
+		modifier = Modifier.padding(bottom = 8.dp)
+	)
 }
 
 @Composable
 fun SettingDescription(
-    text: String
+	text: String
 ) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(bottom = 16.dp)
-    )
+	Text(
+		text = text,
+		style = MaterialTheme.typography.bodyMedium,
+		color = MaterialTheme.colorScheme.onSurfaceVariant,
+		modifier = Modifier.padding(bottom = 16.dp)
+	)
 }
 
 @Composable
 fun OptionDivider() {
-    HorizontalDivider(
-        modifier = Modifier.padding(horizontal = 20.dp),
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
-    )
+	HorizontalDivider(
+		modifier = Modifier.padding(horizontal = 20.dp),
+		color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
+	)
 }
 
 @Composable
 fun ThemeItem(
-    icon: ImageVector,
-    name: String,
-    selected: Boolean,
-    onClick: () -> Unit
+	icon: ImageVector,
+	name: String,
+	selected: Boolean,
+	onClick: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = name,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-        RadioButton(
-            selected = selected,
-            onClick = null,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = Color(0xFFF48FB1), // Maintaining user preference for pink
-                unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-    }
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.clickable(onClick = onClick)
+			.padding(16.dp),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		Icon(
+			imageVector = icon,
+			contentDescription = null,
+			tint = MaterialTheme.colorScheme.onSurfaceVariant
+		)
+		Spacer(modifier = Modifier.width(16.dp))
+		Text(
+			text = name,
+			style = MaterialTheme.typography.bodyLarge,
+			color = MaterialTheme.colorScheme.onSurface,
+			modifier = Modifier.weight(1f)
+		)
+		RadioButton(
+			selected = selected,
+			onClick = null,
+			colors = RadioButtonDefaults.colors(
+				selectedColor = Color(0xFFF48FB1), // Maintaining user preference for pink
+				unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+			)
+		)
+	}
 }
 
 @Composable
 fun LanguageItem(
-    flag: String,
-    name: String,
-    selected: Boolean,
-    onClick: () -> Unit
+	flag: String,
+	name: String,
+	selected: Boolean,
+	onClick: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = flag, fontSize = 24.sp)
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = name,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-        RadioButton(
-            selected = selected,
-            onClick = null,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = Color(0xFFF48FB1),
-                unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-    }
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.clickable(onClick = onClick)
+			.padding(16.dp),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		Text(text = flag, fontSize = 24.sp)
+		Spacer(modifier = Modifier.width(16.dp))
+		Text(
+			text = name,
+			style = MaterialTheme.typography.bodyLarge,
+			color = MaterialTheme.colorScheme.onSurface,
+			modifier = Modifier.weight(1f)
+		)
+		RadioButton(
+			selected = selected,
+			onClick = null,
+			colors = RadioButtonDefaults.colors(
+				selectedColor = Color(0xFFF48FB1),
+				unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+			)
+		)
+	}
 }
