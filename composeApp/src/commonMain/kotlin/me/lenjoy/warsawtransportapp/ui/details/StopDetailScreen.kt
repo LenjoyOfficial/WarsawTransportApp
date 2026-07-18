@@ -14,10 +14,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,48 +39,67 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import me.lenjoy.warsawtransportapp.api.model.Departure
 import me.lenjoy.warsawtransportapp.api.model.LineNumber
 import me.lenjoy.warsawtransportapp.api.model.ServiceTime
+import me.lenjoy.warsawtransportapp.api.model.StopLocation
+import me.lenjoy.warsawtransportapp.repository.FavoritesRepository
 import me.lenjoy.warsawtransportapp.repository.TransportRepository
 import me.lenjoy.warsawtransportapp.ui.theme.AppTheme
 import org.jetbrains.compose.resources.stringResource
 import warsawtransportapp.composeapp.generated.resources.Res
 import warsawtransportapp.composeapp.generated.resources.error_fetching_data
+import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StopDetailScreen(
-	stopGroupId: String,
-	stopPoleNumber: String,
-	stopName: String,
+	stop: StopLocation,
 	repository: TransportRepository,
-	onBack: () -> Unit = {}
+	favoritesRepository: FavoritesRepository,
+	onBack: () -> Unit = {},
+	onDepartureClick: (Departure) -> Unit = {}
 ) {
 	var departures by remember { mutableStateOf<List<Departure>?>(null) }
 	var isLoading by remember { mutableStateOf(true) }
+	var isFavorite by remember {
+		mutableStateOf(favoritesRepository.isFavorite(stop.stopGroupId.value, stop.stopPoleNumber.value))
+	}
 	val snackbarHostState = remember { SnackbarHostState() }
 	val errorMessage = stringResource(Res.string.error_fetching_data)
 
-	LaunchedEffect(stopGroupId, stopPoleNumber) {
+	LaunchedEffect(stop.stopGroupId.value, stop.stopPoleNumber.value) {
 		isLoading = true
 		try {
 			val routes = repository.getRoutes()
-			val allLines = repository.getStopLines(stopGroupId, stopPoleNumber)
+			val allLines = repository.getStopLines(stop.stopGroupId.value, stop.stopPoleNumber.value)
 
-			val allDepartures = mutableListOf<Departure>()
-			allLines.forEach { line ->
-				allDepartures.addAll(
-					repository.getDepartures(
-						stopGroupId,
-						stopPoleNumber,
-						line.line.value,
-						routes
-					)
-				)
+			val allDepartures = coroutineScope {
+				allLines.map { line ->
+					async {
+						repository.getDepartures(
+							stop.stopGroupId.value,
+							stop.stopPoleNumber.value,
+							line.line.value,
+							routes
+						)
+					}
+				}.awaitAll().flatten()
 			}
-			departures = allDepartures.sortedBy { it.serviceTime.hourOfDay * 60 + it.serviceTime.minute }
-		} catch (e: Exception) {
+
+			val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+			val currentMinutes = now.hour * 60 + now.minute
+
+			departures = allDepartures
+				.filter { (it.serviceTime.dayOffset * 1440 + it.serviceTime.hourOfDay * 60 + it.serviceTime.minute) >= currentMinutes }
+				.sortedBy { it.serviceTime.dayOffset * 1440 + it.serviceTime.hourOfDay * 60 + it.serviceTime.minute }
+
+		} catch (_: Exception) {
 			snackbarHostState.showSnackbar(errorMessage)
 		} finally {
 			isLoading = false
@@ -89,12 +109,24 @@ fun StopDetailScreen(
 	Scaffold(
 		topBar = {
 			TopAppBar(
-				title = { Text(stopName) },
+				title = { Text("${stop.stopName} ${stop.stopPoleNumber.value} ${stop.stopGroupId.value}") },
 				navigationIcon = {
 					IconButton(onClick = onBack) {
 						Icon(
 							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
 							contentDescription = "Back"
+						)
+					}
+				},
+				actions = {
+					IconButton(onClick = {
+						favoritesRepository.toggleFavorite(stop)
+						isFavorite = favoritesRepository.isFavorite(stop.stopGroupId.value, stop.stopPoleNumber.value)
+					}) {
+						Icon(
+							imageVector = if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
+							contentDescription = "Toggle Favorite",
+							tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
 						)
 					}
 				},
@@ -106,10 +138,9 @@ fun StopDetailScreen(
 		snackbarHost = { SnackbarHost(snackbarHostState) }
 	) { innerPadding ->
 		StopDetailContent(
-			stopName = stopName,
-			stopPoleNumber = stopPoleNumber,
 			departures = departures ?: emptyList(),
 			isLoading = isLoading,
+			onDepartureClick = onDepartureClick,
 			modifier = Modifier.padding(innerPadding)
 		)
 	}
@@ -117,10 +148,9 @@ fun StopDetailScreen(
 
 @Composable
 fun StopDetailContent(
-	stopName: String,
-	stopPoleNumber: String,
 	departures: List<Departure>,
 	isLoading: Boolean,
+	onDepartureClick: (Departure) -> Unit = {},
 	modifier: Modifier = Modifier
 ) {
 	Column(
@@ -128,23 +158,6 @@ fun StopDetailContent(
 			.fillMaxSize()
 			.padding(16.dp)
 	) {
-
-		Text(
-			text = stopName,
-			style = MaterialTheme.typography.titleLarge.merge(
-				fontWeight = FontWeight.Bold
-			)
-		)
-		Spacer(modifier = Modifier.height(4.dp))
-		Text(
-			text = stopPoleNumber,
-			style = MaterialTheme.typography.bodyLarge
-		)
-
-		Spacer(modifier = Modifier.height(16.dp))
-		HorizontalDivider()
-		Spacer(modifier = Modifier.height(16.dp))
-
 		Text(
 			text = "Departures",
 			style = MaterialTheme.typography.titleMedium
@@ -155,6 +168,13 @@ fun StopDetailContent(
 			Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 				CircularProgressIndicator()
 			}
+		} else if (departures.isEmpty()) {
+			Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+				Text(
+					text = "No more departures today",
+					style = MaterialTheme.typography.bodyLarge
+				)
+			}
 		} else {
 			LazyColumn(
 				modifier = Modifier.fillMaxSize(),
@@ -162,7 +182,10 @@ fun StopDetailContent(
 				verticalArrangement = Arrangement.spacedBy(8.dp)
 			) {
 				items(departures) { departure ->
-					DepartureCard(departure)
+					DepartureCard(
+						departure = departure,
+						onClick = { onDepartureClick(departure) }
+					)
 				}
 			}
 		}
@@ -170,8 +193,12 @@ fun StopDetailContent(
 }
 
 @Composable
-fun DepartureCard(departure: Departure) {
+fun DepartureCard(
+	departure: Departure,
+	onClick: () -> Unit = {}
+) {
 	Card(
+		onClick = onClick,
 		modifier = Modifier.fillMaxWidth(),
 	) {
 		Row(
@@ -233,7 +260,7 @@ fun StopDetailScreenPreview() {
 		Scaffold(
 			topBar = {
 				TopAppBar(
-					title = { Text("Centrum") },
+					title = { Text("Centrum 01") },
 					navigationIcon = {
 						IconButton(onClick = {}) {
 							Icon(
@@ -249,8 +276,6 @@ fun StopDetailScreenPreview() {
 			}
 		) { innerPadding ->
 			StopDetailContent(
-				stopName = "Centrum",
-				stopPoleNumber = "01",
 				departures = sampleDepartures,
 				isLoading = false,
 				modifier = Modifier.padding(innerPadding)
@@ -265,8 +290,6 @@ fun StopDetailScreenLoadingPreview() {
 	AppTheme {
 		Scaffold { innerPadding ->
 			StopDetailContent(
-				stopName = "Centrum",
-				stopPoleNumber = "01",
 				departures = emptyList(),
 				isLoading = true,
 				modifier = Modifier.padding(innerPadding)
