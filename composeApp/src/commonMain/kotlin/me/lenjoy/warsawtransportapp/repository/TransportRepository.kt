@@ -72,6 +72,6 @@ class TransportRepositoryImpl(
 		routes: List<RouteLine>
 	): List<Departure> {
 		val raw = api.getDepartures(stopGroupId, stopPoleNumber, line)
-		return parseDepartures(raw, routes)
+		return parseDepartures(raw, routes, line)
 	}
 }

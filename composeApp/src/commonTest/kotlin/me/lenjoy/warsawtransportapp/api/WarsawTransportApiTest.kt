@@ -23,7 +23,7 @@ class WarsawTransportApiTest {
 	@Test
 	fun testGetStopLines() = runTest {
 		val repo = TransportRepositoryImpl()
-		val result = repo.getStopLines("5070", "03")
+		val result = repo.getStopLines("6002", "03")
 		println("GetStopLines Response: $result")
 	}
 
@@ -32,7 +32,7 @@ class WarsawTransportApiTest {
 		val repo = TransportRepositoryImpl()
 
 		val routes = repo.getRoutes()
-		val result = repo.getDepartures("5070", "03", "20", routes)
+		val result = repo.getDepartures("6002", "03", "15", routes)
 		println("GetDepartures Response: $result")
 		if (result.isNotEmpty()) {
 			println("First Departure: ${result[0]}")

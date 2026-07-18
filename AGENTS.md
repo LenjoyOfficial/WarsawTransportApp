@@ -18,9 +18,13 @@ transport info in Warsaw. Shared logic for networking, parsing, and caching.
 
 - `commonMain`:
     - `api/`: Transport API, DTOs, parsers.
-    - `api/cache/`: Disk caching layer.
+    - `api/cache/`: Transport specific caching.
+    - `cache/`: General disk caching layer.
+    - `i18n/`: Internationalization strings.
     - `network/`: Ktor config + keys.
     - `repository/`: Data access.
+    - `ui/`: Compose UI components and screens.
+    - `util/`: Shared utility functions.
 - `androidMain` / `iosMain`: Platform implementations.
 - `iosApp/`: SwiftUI entry point.
 

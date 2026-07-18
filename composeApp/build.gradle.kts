@@ -4,18 +4,18 @@ import java.io.FileInputStream
 import java.util.Properties
 
 buildscript {
-    dependencies {
-        classpath(libs.buildkonfig)
-    }
+	dependencies {
+		classpath(libs.buildkonfig)
+	}
 }
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.buildkonfig)
+	alias(libs.plugins.kotlinMultiplatform)
+	alias(libs.plugins.androidApplication)
+	alias(libs.plugins.composeMultiplatform)
+	alias(libs.plugins.composeCompiler)
+	alias(libs.plugins.kotlinSerialization)
+	alias(libs.plugins.buildkonfig)
 }
 
 kotlin {
@@ -24,63 +24,63 @@ kotlin {
 		freeCompilerArgs.add("-Xexpect-actual-classes")
 	}
 
-    androidTarget {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
-    }
+	androidTarget {
+		compilerOptions {
+			jvmTarget.set(JvmTarget.JVM_11)
+		}
+	}
 
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
-            isStatic = true
-        }
-    }
+	listOf(
+		iosArm64(),
+		iosSimulatorArm64()
+	).forEach { iosTarget ->
+		iosTarget.binaries.framework {
+			baseName = "ComposeApp"
+			isStatic = true
+		}
+	}
 
-    sourceSets {
-        androidMain.dependencies {
-            implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.ktor.client.okhttp)
-            implementation(libs.play.services.location)
-            implementation(libs.kotlinx.coroutines.play.services)
-        }
-        commonMain.dependencies {
-            implementation(libs.compose.runtime)
-            implementation(libs.compose.foundation)
-            implementation(libs.compose.material3)
-            implementation(compose.materialIconsExtended)
-            implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
-            implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(libs.jetbrains.navigation3.ui)
-            implementation(libs.jetbrains.lifecycle.viewmodelNavigation3)
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.contentNegotiation)
-            implementation(libs.ktor.serialization.kotlinx.json)
-            implementation(libs.ktor.client.logging)
-            implementation(libs.kotlinx.datetime)
-            implementation(libs.okio)
-            implementation(libs.maps.compose)
-            implementation(libs.maps.utils)
-            implementation(libs.moko.permissions)
-            implementation(libs.moko.permissions.compose)
-            implementation(libs.moko.permissions.location)
-        }
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.kotlinx.coroutines.test)
-            implementation("com.squareup.okio:okio-fakefilesystem:3.10.2")
-        }
-    }
+	sourceSets {
+		androidMain.dependencies {
+			implementation(libs.compose.uiToolingPreview)
+			implementation(libs.androidx.activity.compose)
+			implementation(libs.ktor.client.okhttp)
+			implementation(libs.play.services.location)
+			implementation(libs.kotlinx.coroutines.play.services)
+		}
+		commonMain.dependencies {
+			implementation(libs.compose.runtime)
+			implementation(libs.compose.foundation)
+			implementation(libs.compose.material3)
+			implementation(compose.materialIconsExtended)
+			implementation(libs.compose.ui)
+			implementation(libs.compose.components.resources)
+			implementation(libs.compose.uiToolingPreview)
+			implementation(libs.androidx.lifecycle.viewmodelCompose)
+			implementation(libs.androidx.lifecycle.runtimeCompose)
+			implementation(libs.jetbrains.navigation3.ui)
+			implementation(libs.jetbrains.lifecycle.viewmodelNavigation3)
+			implementation(libs.ktor.client.core)
+			implementation(libs.ktor.client.contentNegotiation)
+			implementation(libs.ktor.serialization.kotlinx.json)
+			implementation(libs.ktor.client.logging)
+			implementation(libs.kotlinx.datetime)
+			implementation(libs.okio)
+			implementation(libs.maps.compose)
+			implementation(libs.maps.utils)
+			implementation(libs.moko.permissions)
+			implementation(libs.moko.permissions.compose)
+			implementation(libs.moko.permissions.location)
+		}
+		iosMain.dependencies {
+			implementation(libs.ktor.client.darwin)
+		}
+		commonTest.dependencies {
+			implementation(libs.kotlin.test)
+			implementation(libs.kotlinx.coroutines.test)
+			implementation("com.squareup.okio:okio-fakefilesystem:3.10.2")
+		}
+	}
 }
 
 val localProperties = Properties()
@@ -89,51 +89,51 @@ localProperties.load(FileInputStream(rootProject.file("local.properties")))
 val mapsApiKey = (localProperties["maps.api.key"] as String?) ?: ""
 
 buildkonfig {
-    packageName = "me.lenjoy.warsawtransportapp.config"
-    defaultConfigs {
+	packageName = "me.lenjoy.warsawtransportapp.config"
+	defaultConfigs {
+		val legacyApiKey = (localProperties["legacy.api.key"] as String?) ?: ""
+		val ztmApiKey = (localProperties["ztm.api.key"] as String?) ?: ""
 
-        val legacyApiKey = (localProperties["legacy.api.key"] as String?) ?: ""
-        val ztmApiKey = (localProperties["ztm.api.key"] as String?) ?: ""
-        buildConfigField(FieldSpec.Type.STRING, "LEGACY_API_KEY", legacyApiKey)
-        buildConfigField(FieldSpec.Type.STRING, "ZTM_API_KEY", ztmApiKey)
-        buildConfigField(FieldSpec.Type.STRING, "MAPS_API_KEY", mapsApiKey)
-    }
+		buildConfigField(FieldSpec.Type.STRING, "LEGACY_API_KEY", legacyApiKey)
+		buildConfigField(FieldSpec.Type.STRING, "ZTM_API_KEY", ztmApiKey)
+		buildConfigField(FieldSpec.Type.STRING, "MAPS_API_KEY", mapsApiKey)
+	}
 }
 
 android {
-    namespace = "me.lenjoy.warsawtransportapp"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+	namespace = "me.lenjoy.warsawtransportapp"
+	compileSdk = libs.versions.android.compileSdk.get().toInt()
 
-    defaultConfig {
-        applicationId = "me.lenjoy.warsawtransportapp"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+	defaultConfig {
+		applicationId = "me.lenjoy.warsawtransportapp"
+		minSdk = libs.versions.android.minSdk.get().toInt()
+		targetSdk = libs.versions.android.targetSdk.get().toInt()
+		versionCode = 1
+		versionName = "1.0"
 
-        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
-    }
-    buildFeatures {
-        buildConfig = true
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
+		manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+	}
+	buildFeatures {
+		buildConfig = true
+	}
+	packaging {
+		resources {
+			excludes += "/META-INF/{AL2.0,LGPL2.1}"
+		}
+	}
+	buildTypes {
+		getByName("release") {
+			isMinifyEnabled = false
+			signingConfig = signingConfigs.getByName("debug")
+		}
+	}
+	compileOptions {
+		sourceCompatibility = JavaVersion.VERSION_11
+		targetCompatibility = JavaVersion.VERSION_11
+	}
 }
 
 dependencies {
-    debugImplementation(libs.compose.uiTooling)
+	debugImplementation(libs.compose.uiTooling)
 }
 

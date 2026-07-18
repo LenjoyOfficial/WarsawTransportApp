@@ -66,16 +66,15 @@ internal fun parseStopLines(rows: List<ValuesRowDto>): List<StopLine> =
 
 /**
  * Parses raw departure data from the API into a list of [Departure] domain models.
- * Requires [routes] to resolve line numbers from route names.
+ * Requires [routes] to resolve route info and [line] to set the line number.
  */
-internal fun parseDepartures(rows: List<List<KeyValueDto>>, routes: List<RouteLine>): List<Departure> {
+internal fun parseDepartures(rows: List<List<KeyValueDto>>, routes: List<RouteLine>, line: String): List<Departure> {
 	val list = rows.mapNotNull { row ->
 		val map = row.asMap()
 		val route = map.string("trasa")
-		val line = routes.find { it.routeName == route } ?: return@mapNotNull null
 		val serviceTime = map.string("czas")?.let(::parseServiceTime) ?: return@mapNotNull null
 		Departure(
-			line = LineNumber(line.line),
+			line = LineNumber(line),
 			route = route,
 			direction = map.string("kierunek"),
 			serviceTime = serviceTime,
