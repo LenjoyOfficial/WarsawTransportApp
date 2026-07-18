@@ -1,22 +1,26 @@
 package me.lenjoy.warsawtransportapp.api.model
 
+import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 
 /**
  * Type-safe identifier for a group of stops (zespół przystankowy).
  */
+@Serializable
 @JvmInline
 value class StopGroupId(val value: String)
 
 /**
  * Type-safe identifier for a specific pole number within a stop group (numer słupka).
  */
+@Serializable
 @JvmInline
 value class StopPoleNumber(val value: String)
 
 /**
  * Type-safe identifier for a public transport line number.
  */
+@Serializable
 @JvmInline
 value class LineNumber(val value: String)
 
@@ -37,6 +41,7 @@ data class Vehicle(
  *
  * @property validFrom The date from which this stop location is valid (e.g., "2026-01-01 00:00:00").
  */
+@Serializable
 data class StopLocation(
 	val stopGroupId: StopGroupId,
 	val stopPoleNumber: StopPoleNumber,

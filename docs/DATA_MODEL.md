@@ -209,6 +209,18 @@ interface TransportRepository {
 }
 ```
 
+### `repository.FavoritesRepository`
+
+Handles persistent user favorites.
+
+```kotlin
+interface FavoritesRepository {
+    fun getFavorites(): List<StopLocation>
+    fun toggleFavorite(stop: StopLocation)
+    fun isFavorite(stopGroupId: String, stopPoleNumber: String): Boolean
+}
+```
+
 Used by `TransportRepositoryImpl`:
 - Calls API methods (via `CachedWarsawTransportApi`)
 - Maps DTOs → domain models

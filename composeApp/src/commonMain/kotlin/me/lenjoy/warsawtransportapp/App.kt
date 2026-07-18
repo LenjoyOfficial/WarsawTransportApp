@@ -41,8 +41,10 @@ import androidx.navigation3.ui.NavDisplay
 import kotlinx.coroutines.async
 import me.lenjoy.warsawtransportapp.api.model.StopLocation
 import me.lenjoy.warsawtransportapp.i18n.LanguageProvider
+import me.lenjoy.warsawtransportapp.repository.FavoritesRepositoryImpl
 import me.lenjoy.warsawtransportapp.repository.TransportRepositoryImpl
 import me.lenjoy.warsawtransportapp.ui.SettingsScreen
+import me.lenjoy.warsawtransportapp.ui.details.RouteDetailScreen
 import me.lenjoy.warsawtransportapp.ui.details.StopDetailScreen
 import me.lenjoy.warsawtransportapp.ui.search.GlobalSearchBar
 import me.lenjoy.warsawtransportapp.ui.search.HomeScreen
@@ -78,6 +80,8 @@ data object SettingsScreenEntry : RootScreenEntry {
 
 data class StopDetailScreenEntry(val stop: StopLocation) : ScreenEntry
 
+data class RouteDetailScreenEntry(val line: String, val routeName: String) : ScreenEntry
+
 // -----------------------------------------------------------------------------------
 // App root
 // -----------------------------------------------------------------------------------
@@ -90,6 +94,7 @@ var themeConfig by mutableStateOf(ThemeConfig.SYSTEM)
 @Preview
 fun App() {
 	val api = remember { TransportRepositoryImpl() }
+	val favoritesRepository = remember { FavoritesRepositoryImpl() }
 	var isLoading by remember { mutableStateOf(true) }
 	var stops by remember { mutableStateOf<List<StopLocation>>(emptyList()) }
 	val snackbarHostState = remember { SnackbarHostState() }
@@ -165,6 +170,7 @@ fun App() {
 					entryProvider = entryProvider {
 						entry<HomeScreenEntry> {
 							HomeScreen(
+								favoritesRepository = favoritesRepository,
 								searchBar = {
 									GlobalSearchBar(isLoading, stops) { stop ->
 										backStack.add(StopDetailScreenEntry(stop))
@@ -176,15 +182,29 @@ fun App() {
 							)
 						}
 						entry<SettingsScreenEntry> {
-							RootScreen { SettingsScreen() }
+							SettingsScreen(
+								onBack = { backStack.removeLast() }
+							)
 						}
 						entry<StopDetailScreenEntry> { screen ->
 							val stop = screen.stop
 
 							StopDetailScreen(
-								stopGroupId = stop.stopGroupId.value,
-								stopPoleNumber = stop.stopPoleNumber.value,
-								stopName = stop.stopName,
+								stop = stop,
+								repository = api,
+								favoritesRepository = favoritesRepository,
+								onBack = { backStack.removeLast() },
+								onDepartureClick = { departure ->
+									departure.route?.let { route ->
+										backStack.add(RouteDetailScreenEntry(departure.line.value, route))
+									}
+								}
+							)
+						}
+						entry<RouteDetailScreenEntry> { screen ->
+							RouteDetailScreen(
+								line = screen.line,
+								routeName = screen.routeName,
 								repository = api,
 								onBack = { backStack.removeLast() }
 							)

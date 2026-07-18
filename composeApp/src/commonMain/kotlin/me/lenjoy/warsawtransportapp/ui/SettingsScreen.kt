@@ -1,6 +1,7 @@
 package me.lenjoy.warsawtransportapp.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,16 +11,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.SettingsSuggest
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +34,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import me.lenjoy.warsawtransportapp.SettingsScreenEntry
 import me.lenjoy.warsawtransportapp.language
 import me.lenjoy.warsawtransportapp.themeConfig
 import me.lenjoy.warsawtransportapp.ui.theme.ThemeConfig
@@ -42,68 +49,94 @@ import warsawtransportapp.composeapp.generated.resources.theme_light
 import warsawtransportapp.composeapp.generated.resources.theme_system
 
 @Composable
-fun SettingsScreen() {
-	Column(
-		modifier = Modifier.fillMaxSize()
-	) {
-		// Appearance Section
-		SettingTitle(stringResource(Res.string.settings_appearance))
-		SettingDescription(stringResource(Res.string.settings_appearance_desc))
-
-		Surface(
-			color = MaterialTheme.colorScheme.surfaceVariant,
-			shape = RoundedCornerShape(12.dp),
-			modifier = Modifier.fillMaxWidth()
-		) {
-			Column {
-				ThemeItem(
-					icon = Icons.Default.LightMode,
-					name = stringResource(Res.string.theme_light),
-					selected = themeConfig == ThemeConfig.LIGHT,
-					onClick = { themeConfig = ThemeConfig.LIGHT }
-				)
-				OptionDivider()
-				ThemeItem(
-					icon = Icons.Default.DarkMode,
-					name = stringResource(Res.string.theme_dark),
-					selected = themeConfig == ThemeConfig.DARK,
-					onClick = { themeConfig = ThemeConfig.DARK }
-				)
-				OptionDivider()
-				ThemeItem(
-					icon = Icons.Default.SettingsSuggest,
-					name = stringResource(Res.string.theme_system),
-					selected = themeConfig == ThemeConfig.SYSTEM,
-					onClick = { themeConfig = ThemeConfig.SYSTEM }
-				)
-			}
+fun SettingsScreen(
+	onBack: () -> Unit
+) {
+	Scaffold(
+		topBar = {
+			TopAppBar(
+				title = { Text(stringResource(SettingsScreenEntry.name)) },
+				colors = TopAppBarDefaults.topAppBarColors(
+					containerColor = MaterialTheme.colorScheme.surfaceVariant
+				),
+				navigationIcon = {
+					IconButton(onClick = onBack) {
+						Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+					}
+				}
+			)
 		}
-
-		Spacer(modifier = Modifier.padding(top = 24.dp))
-
-		// Language Section
-		SettingTitle(stringResource(Res.string.settings_language))
-		SettingDescription(stringResource(Res.string.settings_language_desc))
-
-		Surface(
-			color = MaterialTheme.colorScheme.surfaceVariant,
-			shape = RoundedCornerShape(12.dp),
-			modifier = Modifier.fillMaxWidth()
+	) { paddingValues ->
+		Box(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(paddingValues)
+				.padding(16.dp),
+			contentAlignment = Alignment.Center
 		) {
-			Column {
-				LanguageItem(
-					flag = "🇬🇧",
-					name = "English",
-					selected = language == "en",
-					onClick = { language = "en" }
-				)
-				OptionDivider()
-				LanguageItem(
-					flag = "🇵🇱",
-					name = "Polski",
-					selected = language == "pl",
-					onClick = { language = "pl" }
-				)
+			Column(
+				modifier = Modifier.fillMaxSize()
+			) {
+				// Appearance Section
+				SettingTitle(stringResource(Res.string.settings_appearance))
+				SettingDescription(stringResource(Res.string.settings_appearance_desc))
+
+				Surface(
+					color = MaterialTheme.colorScheme.surfaceVariant,
+					shape = RoundedCornerShape(12.dp),
+					modifier = Modifier.fillMaxWidth()
+				) {
+					Column {
+						ThemeItem(
+							icon = Icons.Default.LightMode,
+							name = stringResource(Res.string.theme_light),
+							selected = themeConfig == ThemeConfig.LIGHT,
+							onClick = { themeConfig = ThemeConfig.LIGHT }
+						)
+						OptionDivider()
+						ThemeItem(
+							icon = Icons.Default.DarkMode,
+							name = stringResource(Res.string.theme_dark),
+							selected = themeConfig == ThemeConfig.DARK,
+							onClick = { themeConfig = ThemeConfig.DARK }
+						)
+						OptionDivider()
+						ThemeItem(
+							icon = Icons.Default.SettingsSuggest,
+							name = stringResource(Res.string.theme_system),
+							selected = themeConfig == ThemeConfig.SYSTEM,
+							onClick = { themeConfig = ThemeConfig.SYSTEM }
+						)
+					}
+				}
+
+				Spacer(modifier = Modifier.padding(top = 24.dp))
+
+				// Language Section
+				SettingTitle(stringResource(Res.string.settings_language))
+				SettingDescription(stringResource(Res.string.settings_language_desc))
+
+				Surface(
+					color = MaterialTheme.colorScheme.surfaceVariant,
+					shape = RoundedCornerShape(12.dp),
+					modifier = Modifier.fillMaxWidth()
+				) {
+					Column {
+						LanguageItem(
+							flag = "🇬🇧",
+							name = "English",
+							selected = language == "en",
+							onClick = { language = "en" }
+						)
+						OptionDivider()
+						LanguageItem(
+							flag = "🇵🇱",
+							name = "Polski",
+							selected = language == "pl",
+							onClick = { language = "pl" }
+						)
+					}
+				}
 			}
 		}
 	}
