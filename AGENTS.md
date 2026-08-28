@@ -1,48 +1,51 @@
-# Project: WarsawTransportApp
+# WarsawTransportApp
 
-## Overview
+KMP (Kotlin 2.4.0) Compose Multiplatform app for Warsaw public transport.
 
-WarsawTransportApp is a Kotlin Multiplatform (KMP) application for real-time and scheduled public
-transport info in Warsaw. Shared logic for networking, parsing, and caching.
+## Build & Test
 
-## Tech Stack
+```sh
+./gradlew :composeApp:assembleDebug        # Android
+./gradlew :composeApp:allTests             # all targets (no device needed)
+./gradlew :composeApp:check                # checks + unit tests
+```
 
-- **Language**: Kotlin 2.1.0
-- **UI**: Compose Multiplatform
-- **Network**: Ktor (Darwin/OkHttp)
-- **Serialization**: Kotlinx Serialization
-- **FS/Cache**: Okio
-- **Date/Time**: Kotlinx Datetime
+API keys (`ztm.api.key`, `maps.api.key`) required to compile — set in `local.properties` (Android) or `iosApp/Configuration/Config.xcconfig` (iOS). BuildKonfig codegen generates `me.lenjoy.warsawtransportapp.config.BuildKonfig`.
 
-## Project Structure
+## Architecture
 
-- `commonMain`:
-    - `api/`: Transport API, DTOs, parsers.
-    - `api/cache/`: Transport specific caching.
-    - `cache/`: General disk caching layer.
-    - `i18n/`: Internationalization strings.
-    - `network/`: Ktor config + keys.
-    - `repository/`: Data access.
-    - `ui/`: Compose UI components and screens.
-    - `util/`: Shared utility functions.
-- `androidMain` / `iosMain`: Platform implementations.
-- `iosApp/`: SwiftUI entry point.
+```
+composeApp/src/
+  commonMain/kotlin/me/lenjoy/warsawtransportapp/
+    api/           — WarsawTransportApi (interface), CachedWarsawTransportApi (decorator), DTOs, parsers
+    api/cache/     — CacheManager (Okio, 24h TTL)
+    network/       — Ktor HttpClient config (30s timeout, lenient JSON, x-functions-key header)
+    repository/    — TransportRepository (via CachedApi), FavoritesRepository
+    ui/            — Compose screens (NavDisplay + Navigation3 routing)
+    cache/         — expect/actual platform FileSystem + cacheDir
+    i18n/          — expect/actual language provider
+  androidMain/     — OkHttp engine, Android FileSystem/cacheDir
+  iosMain/         — Darwin engine, iOS FileSystem/cacheDir
+  commonTest/      — kotlin.test, Okio FakeFileSystem
+```
 
-## Documentation
+## Key Conventions
 
-- `docs/DATA_MODEL.md`: Domain models and data structures.
-- `docs/API_DOCUMENTATION.md`: ZTM Warsaw API details.
+- **Indentation**: tabs
+- **Cache wrapper**: always use `CachedWarsawTransportApi` (default in `TransportRepositoryImpl`)
+- **DTO → Model**: parsers in `api/parser/` convert DTOs to domain models
+- **ServiceTime**: handles night-line 24h+ times (e.g. `"26:15:00"` → dayOffset=1, hourOfDay=2)
+- **Platform expect/actual**: `FileSystem`, `HttpClient`, `LocationService`, `I18n` — add new `expect` declarations for platform-specific code
+- **Compose Resources**: generated `Res` object for strings/icons (do not hardcode string resources)
 
-## Goals
+## Stack
 
-1. **KMP Efficiency**: Maximize shared code.
-2. **Offline-First**: Disk cache for API data.
-3. **Accuracy**: Real-time ZTM Warsaw data.
-4. **Clean Arch**: Separate API, domain, and UI.
+- Kotlin 2.4.0, AGP 9.3.0, Compose Multiplatform 1.11.1
+- Ktor 3.5.1, Kotlinx Serialization, Kotlinx Datetime 0.8.0
+- Okio 3.17.0 (cache), Navigation3, moko-permissions, kmp-maps-compose
+- compileSdk/targetSdk 37, minSdk 31, JVM 17
 
-## Agent Guidelines
+## Docs
 
-- **KMP First**: Logic → `commonMain`.
-- **Cache**: Wrap new API calls in `CachedWarsawTransportApi`.
-- **Consistency**: Follow DTO-to-Model mapping patterns.
-- **Indentation**: Use tabulators for indenting code
+- `docs/API_DOCUMENTATION.md` — Azure Functions backend endpoints
+- `docs/DATA_MODEL.md` — DTOs, domain models, parsers, caching flow

@@ -1,347 +1,247 @@
-# Warsaw Transport API Documentation
+# Internal Backend API Documentation
 
-This document summarizes the four Warsaw Transport APIs provided in the user-supplied documentation. The descriptions below are normalized into a consistent structure for easier use in development and integration.
+This document describes the Azure Functions HTTP endpoints exposed by this backend. These endpoints wrap the external ZTM APIs and serve cached or live data.
+
+Base URL: `https://wt-functions-hwecdjb5bth6fjf8.polandcentral-01.azurewebsites.net/`
+
+All requests require the `x-functions-key` header with the Azure Function access key.
 
 ---
 
-## 1. Public Transport Routes
+## 1. Get Route
 
 ### Purpose
-Returns current route data for Warsaw Public Transport vehicles (WTP). The data is provided by the Warsaw Public Transport Authority (`ZTM`).
+Returns route data including transport type and stop sequence for a specific route number. Data is sourced from the daily cache in Cosmos DB (synced nightly).
 
 ### Endpoint
 - **Method:** `GET`
-- **URL:** `https://api.um.warszawa.pl/api/action/public_transport_routes/`
+- **URL:** `/api/routes/{route_number}`
 
-### Update frequency
-- Updated **once per day**.
-
-### Required parameters
-- `apikey` — API key obtained after creating an account on `api.um.warszawa.pl`.
+### Required headers
+- `x-functions-key` — Azure Function access key
 
 ### Response format
 - JSON
 
 ### Response structure
-The response is a nested JSON object with:
-- a **route number** as the top-level key,
-- a **route name** as the next-level key,
-- a list of **stop sequence numbers** as nested keys.
+Top-level fields:
+
+- `route_number` — string, route identifier (e.g. `"1"`, `"523"`)
+- `transport_type` — string, one of `tram`, `bus`, `train`, `unknown`
+- `variants` — object keyed by variant name (e.g. `"TD-3BAN"`)
+
+Each variant contains:
+
+- `name` — string, variant name
+- `stops` — object keyed by stop sequence number (string)
 
 Each stop entry contains:
-- `ulica_id` — street ID where the stop is located
-- `nr_zespolu` — stop group number
-- `nr_przystanku` — stop number within the group
-- `typ` — stop type
-- `odleglosc` — distance from the beginning of the route in meters
+
+- `street_id` — string, street ID
+- `stop_group` — string, stop group number
+- `stop_number` — string, stop pole number
+- `type` — string, stop type code
+- `distance` — number, distance from route start in meters
 
 ### Example request
-```text
-https://api.um.warszawa.pl/api/action/public_transport_routes/?apikey=YOUR_API_KEY
+```bash
+curl 'https://warsaw-transport-function-hzg8h7buhbepd0aw.polandcentral-01.azurewebsites.net/api/routes/1' \
+  --header 'x-functions-key: <FUNCTION_KEY>'
 ```
 
 ### Example response
 ```json
 {
-  "1": {
+  "route_number": "1",
+  "transport_type": "tram",
+  "variants": {
     "TD-3BAN": {
-      "1": {
-        "ulica_id": "2513",
-        "nr_zespolu": "R-03",
-        "nr_przystanku": "00",
-        "typ": "6",
-        "odleglosc": 0
-      },
-      "2": {
-        "ulica_id": "1205",
-        "nr_zespolu": "3240",
-        "nr_przystanku": "04",
-        "typ": "5",
-        "odleglosc": 245
-      },
-      "3": {
-        "ulica_id": "1205",
-        "nr_zespolu": "3239",
-        "nr_przystanku": "04",
-        "typ": "1",
-        "odleglosc": 833
-      },
-      "4": {
-        "ulica_id": "1205",
-        "nr_zespolu": "3238",
-        "nr_przystanku": "04",
-        "typ": "1",
-        "odleglosc": 1228
-      },
-      "5": {
-        "ulica_id": "1205",
-        "nr_zespolu": "3237",
-        "nr_przystanku": "04",
-        "typ": "1",
-        "odleglosc": 1643
-      },
-      "6": {
-        "ulica_id": "0303",
-        "nr_zespolu": "3286",
-        "nr_przystanku": "04",
-        "typ": "1",
-        "odleglosc": 2016
-      },
-      "7": {
-        "ulica_id": "1903",
-        "nr_zespolu": "3118",
-        "nr_przystanku": "02",
-        "typ": "1",
-        "odleglosc": 2383
-      },
-      "18": {
-        "ulica_id": "0202",
-        "nr_zespolu": "4108",
-        "nr_przystanku": "04",
-        "typ": "3",
-        "odleglosc": 7112
+      "name": "TD-3BAN",
+      "stops": {
+        "1": {
+          "street_id": "2513",
+          "stop_group": "R-03",
+          "stop_number": "00",
+          "type": "6",
+          "distance": 0
+        },
+        "2": {
+          "street_id": "1205",
+          "stop_group": "3240",
+          "stop_number": "04",
+          "type": "5",
+          "distance": 245
+        }
       }
     }
   }
 }
 ```
 
----
-
-## 2. Public Transport Stop Locations
-
-### Purpose
-Returns location data for public transport stops. The dataset is associated with **Lines available at the stop**.
-
-### Endpoint
-- **Method:** `POST`
-- **URL:** `https://dane.um.warszawa.pl/api/action/get_ztm_przystanki_komunikacji_miejskiej`
-
-### Required parameters
-- `resource_id` — GUID, required resource identifier.
-- `Authorization` — Header with value `<ZTM_API_KEY>`, required.
-
-### Response format
-- JSON-like structure
-
-### Response structure
-The documentation lists the following response fields:
-
-#### Stop / dataset fields
-- `ijp` — array, summary air quality index according to the Polish Air Quality Index
-  - `name` — string, verbal summary of the air quality index
-  - `resource_id` — GUID, required resource identifier
-- `data_source` — string, measurement source
-- `Name` — string, station name
-- `lon` — number, longitude
-- `lat` — number, latitude
-
-#### Address object: `adres`
-- `city` — string, city
-- `street` — string, street
-- `zip_code` — string, postal code
-- `commune` — string, commune
-
-#### Measurements object: `pomiary`
-- `index` — array, air quality index for the measurement
-- `param_name` — string, pollutant name
-- `param_code` — string, pollutant code
-- `value` — string, measurement value
-- `time` — string, measurement time
-- `unit` — string, unit
-
-### Example request
-```bash
-curl --location --request POST 'https://dane.um.warszawa.pl/api/action/get_ztm_przystanki_komunikacji_miejskiej' --header 'Authorization: <ZTM_API_KEY>'
-```
-
-### Example response
-```json
-{
-  "values": [
-    {
-      "value": "1001",
-      "key": "zespol"
-    },
-    {
-      "value": "01",
-      "key": "slupek"
-    },
-    {
-      "value": "Kijowska",
-      "key": "nazwa_zespolu"
-    },
-    {
-      "value": "2201",
-      "key": "id_ulicy"
-    },
-    {
-      "value": "52.248455",
-      "key": "szer_geo"
-    },
-    {
-      "value": "21.044827",
-      "key": "dlug_geo"
-    },
-    {
-      "value": "al.Zieleniecka",
-      "key": "kierunek"
-    },
-    {
-      "value": "2025-04-01 00:00:00.0",
-      "key": "obowiazuje_od"
-    }
-  ]
-}
-```
-
-### Notes
-The provided documentation mixes air-quality terminology with stop-location terminology. The sample response clearly describes a stop record, so the field list above is normalized from the source material.
+### Error responses
+- `400` — Missing route number
+- `404` — Route not found in cache
 
 ---
 
-## 3. Lines Available at the Stop
+## 2. Get Stops
 
 ### Purpose
-Returns the list of public transport lines available at a given stop.
-
-### Related datasets
-- **Public Transport Stop Locations**
-- **Line Departures from Stop**
+Returns all public transport stop locations. Data is sourced from the daily cache in Cosmos DB (synced nightly).
 
 ### Endpoint
-- **Method:** `POST`
-- **URL:** `http://dane.um.warszawa.pl/api/action/get_ztm_lista_linii_na_przystanku`
+- **Method:** `GET`
+- **URL:** `/api/stops`
 
-### Required parameters
-- `busstopId` — stop identifier.
-- `busstopNr` — stop pole identifier.
-- `Authorization` — Header with value `<ZTM_API_KEY>`, required.
+### Required headers
+- `x-functions-key` — Azure Function access key
 
 ### Response format
-- JSON
+- JSON (array)
 
 ### Response structure
-The response is an array of objects. Each object contains:
-- `values` — array of lines available at the stop
+Each stop entry contains:
 
-Each line entry contains:
-- `value` — line number available at the stop
-- `key` — fixed value: `"linia"`
+- `stop_group` — string, stop group identifier
+- `stop_pole` — string, stop pole number
+- `stop_group_name` — string, human-readable stop name
+- `street_id` — string, street identifier
+- `latitude` — number, geographic latitude
+- `longitude` — number, geographic longitude
+- `direction` — string, direction description
+- `valid_from` — string, timestamp from which the stop data is valid
 
 ### Example request
 ```bash
-curl --location 'http://dane.um.warszawa.pl/api/action/get_ztm_lista_linii_na_przystanku' \
-  --header 'Authorization: <ZTM_API_KEY>' \
-  --header 'Content-Type: application/json' \
-  --data '{"busstopId": "5070", "busstopNr": "03" }'
+curl 'https://warsaw-transport-function-hzg8h7buhbepd0aw.polandcentral-01.azurewebsites.net/api/stops' \
+  --header 'x-functions-key: <FUNCTION_KEY>'
 ```
 
 ### Example response
 ```json
 [
   {
-    "values": [
-      {
-        "value": "23",
-        "key": "linia"
-      }
-    ]
-  },
-  {
-    "values": [
-      {
-        "value": "20",
-        "key": "linia"
-      }
-    ]
-  },
-  {
-    "values": [
-      {
-        "value": "24",
-        "key": "linia"
-      }
-    ]
+    "stop_group": "1001",
+    "stop_pole": "01",
+    "stop_group_name": "Kijowska",
+    "street_id": "2201",
+    "latitude": 52.248455,
+    "longitude": 21.044827,
+    "direction": "al.Zieleniecka",
+    "valid_from": "2025-04-01 00:00:00.0"
   }
 ]
 ```
 
+### Error responses
+- `404` — Stops data not found in cache
+
 ---
 
-## 4. Line Departures from the Stop
+## 3. Get Lines at Stop
 
 ### Purpose
-Returns departures for a given line at a specific stop.
-
-### Related datasets
-- **Location of public transport stops**
-- **Lines available at the stop**
+Returns the list of public transport lines available at a given stop. Data is fetched live from the ZTM API.
 
 ### Endpoint
-- **Method:** `POST`
-- **URL:** `https://dane.um.warszawa.pl/api/action/get_ztm_odjazdy_linii_z_przystanku`
+- **Method:** `GET`
+- **URL:** `/api/stops/{stop_id}/{stop_number}/lines`
 
-### Required parameters
-- `busstopId` — stop identifier.
-- `busstopNr` — stop pole identifier.
-- `line` — line number.
-- `Authorization` — Header with value `<ZTM_API_KEY>`, required.
+### Path parameters
+- `stop_id` — stop group identifier (e.g. `"5070"`)
+- `stop_number` — stop pole number (e.g. `"03"`)
+
+### Required headers
+- `x-functions-key` — Azure Function access key
 
 ### Response format
 - JSON
+
+### Response structure
+- `stop_id` — string, stop group identifier
+- `stop_number` — string, stop pole number
+- `lines` — array of strings, line designations available at the stop
+
+### Example request
+```bash
+curl 'https://warsaw-transport-function-hzg8h7buhbepd0aw.polandcentral-01.azurewebsites.net/api/stops/5070/03/lines' \
+  --header 'x-functions-key: <FUNCTION_KEY>'
+```
+
+### Example response
+```json
+{
+  "stop_id": "5070",
+  "stop_number": "03",
+  "lines": ["23", "20", "24"]
+}
+```
+
+### Error responses
+- `400` — Missing stop_id or stop_number
+- `500` — Error fetching data from ZTM API
+
+---
+
+## 4. Get Departures
+
+### Purpose
+Returns departure times for a specific line at a specific stop. Data is fetched live from the ZTM API.
+
+### Endpoint
+- **Method:** `GET`
+- **URL:** `/api/stops/{stop_id}/{stop_number}/lines/{line}/departures`
+
+### Path parameters
+- `stop_id` — stop group identifier
+- `stop_number` — stop pole number
+- `line` — line number (e.g. `"20"`)
+
+### Required headers
+- `x-functions-key` — Azure Function access key
+
+### Response format
+- JSON (array)
 
 ### Response structure
 Each departure entry contains:
-- `czas` — departure time
-- `brygada` — identifier of the brigade/vehicle crew serving the trip
-- `kierunek` — destination/direction of the trip
-- `trasa` — route being operated
-- `symbol_1` — additional info
-- `symbol_2` — additional info
+
+- `departure_time` — string, departure time (HH:mm:ss)
+- `brigade` — string, brigade / vehicle crew identifier
+- `direction` — string, destination description
+- `route` — string, route designation
+- `symbol_1` — string or null, additional information
+- `symbol_2` — string or null, additional information
 
 ### Example request
 ```bash
-curl --location 'https://dane.um.warszawa.pl/api/action/get_ztm_odjazdy_linii_z_przystanku' --header 'Authorization: <ZTM_API_KEY>' --header 'Content-Type: application/json' --data '{"busstopId": "5070", "busstopNr": "03", "line": "20"}'
+curl 'https://warsaw-transport-function-hzg8h7buhbepd0aw.polandcentral-01.azurewebsites.net/api/stops/5070/03/lines/20/departures' \
+  --header 'x-functions-key: <FUNCTION_KEY>'
 ```
 
 ### Example response
 ```json
 [
-  [
-    {
-      "value": null,
-      "key": "symbol_2"
-    },
-    {
-      "value": null,
-      "key": "symbol_1"
-    },
-    {
-      "value": "012",
-      "key": "brygada"
-    },
-    {
-      "value": "Żerań FSO",
-      "key": "kierunek"
-    },
-    {
-      "value": "TP-FSO",
-      "key": "trasa"
-    },
-    {
-      "value": "06:46:00",
-      "key": "czas"
-    }
-  ]
+  {
+    "departure_time": "06:46:00",
+    "brigade": "012",
+    "direction": "Żerań FSO",
+    "route": "TP-FSO",
+    "symbol_1": null,
+    "symbol_2": null
+  }
 ]
 ```
+
+### Error responses
+- `400` — Missing stop_id, stop_number, or line
+- `500` — Error fetching data from ZTM API
 
 ---
 
 ## Common Notes
 
-- All APIs use Warsaw transport data from the `api.um.warszawa.pl` or `dane.um.warszawa.pl` domains.
-- Some source documentation is inconsistent in wording and field naming; this file preserves the intent and normalizes the summaries into a consistent format.
-- Example requests use the exact shapes shown in the source documentation.
-
+- All endpoints return JSON with `Content-Type: application/json`.
+- Route and stops data is cached in Cosmos DB and synced daily via timer-triggered functions.
+- Lines and departures endpoints fetch live data from the ZTM API on each request.
+- The `transport_type` field on routes follows the classification rules documented in [`API_DOCUMENTATION.md`](./API_DOCUMENTATION.md#transport-type-classification).

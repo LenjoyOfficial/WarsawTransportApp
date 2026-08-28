@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import me.lenjoy.warsawtransportapp.themeConfig
 
 private val lightScheme = lightColorScheme(
 	primary = primaryLight,
@@ -264,13 +265,7 @@ fun AppTheme(
 	themeConfig: ThemeConfig = ThemeConfig.SYSTEM,
 	content: @Composable () -> Unit
 ) {
-	val darkTheme = when (themeConfig) {
-		ThemeConfig.LIGHT -> false
-		ThemeConfig.DARK -> true
-		ThemeConfig.SYSTEM -> isSystemInDarkTheme()
-	}
-
-	val colorScheme = if (darkTheme) darkScheme else lightScheme
+	val colorScheme = if (isDarkTheme(themeConfig)) darkScheme else lightScheme
 
 	// Gradual fade instead of instant swap
 	val animated = animateColorScheme(colorScheme)
@@ -279,6 +274,13 @@ fun AppTheme(
 		colorScheme = animated,
 		content = content
 	)
+}
+
+@Composable
+fun isDarkTheme(theme: ThemeConfig = themeConfig): Boolean = when (theme) {
+	ThemeConfig.LIGHT -> false
+	ThemeConfig.DARK -> true
+	ThemeConfig.SYSTEM -> isSystemInDarkTheme()
 }
 
 @Composable

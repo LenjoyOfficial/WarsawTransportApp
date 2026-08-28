@@ -10,20 +10,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import me.lenjoy.warsawtransportapp.cache.initCache
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        initCache(this)
-        initPlatform(this)
-        enableEdgeToEdge()
-        super.onCreate(savedInstanceState)
+	override fun onCreate(savedInstanceState: Bundle?) {
+		initCache(this)
+		initPlatform(this)
+		enableEdgeToEdge()
+		super.onCreate(savedInstanceState)
 
-        setContent {
-            App()
-        }
-    }
+		setContent {
+			App()
+		}
+	}
 }
 
 @Preview
 @Composable
 fun AppAndroidPreview() {
-    App()
+	App()
 }

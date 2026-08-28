@@ -3,11 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.FileInputStream
 import java.util.Properties
 
-buildscript {
-	dependencies {
-		classpath(libs.buildkonfig)
-	}
-}
+group = "me.lenjoy.warsawtransportapp"
+version = "1.0"
 
 plugins {
 	alias(libs.plugins.kotlinMultiplatform)
@@ -26,7 +23,7 @@ kotlin {
 
 	androidTarget {
 		compilerOptions {
-			jvmTarget.set(JvmTarget.JVM_11)
+			jvmTarget.set(JvmTarget.JVM_17)
 		}
 	}
 
@@ -84,20 +81,13 @@ kotlin {
 }
 
 val localProperties = Properties()
-localProperties.load(FileInputStream(rootProject.file("local.properties")))
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+	localProperties.load(FileInputStream(localPropertiesFile))
+}
 
-val mapsApiKey = (localProperties["maps.api.key"] as String?) ?: ""
-
-buildkonfig {
-	packageName = "me.lenjoy.warsawtransportapp.config"
-	defaultConfigs {
-		val legacyApiKey = (localProperties["legacy.api.key"] as String?) ?: ""
-		val ztmApiKey = (localProperties["ztm.api.key"] as String?) ?: ""
-
-		buildConfigField(FieldSpec.Type.STRING, "LEGACY_API_KEY", legacyApiKey)
-		buildConfigField(FieldSpec.Type.STRING, "ZTM_API_KEY", ztmApiKey)
-		buildConfigField(FieldSpec.Type.STRING, "MAPS_API_KEY", mapsApiKey)
-	}
+fun getLocalProperty(key: String): String {
+	return (localProperties[key] as String?) ?: (project.findProperty(key) as String?) ?: ""
 }
 
 android {
@@ -105,13 +95,13 @@ android {
 	compileSdk = libs.versions.android.compileSdk.get().toInt()
 
 	defaultConfig {
-		applicationId = "me.lenjoy.warsawtransportapp"
+		applicationId = project.group.toString()
 		minSdk = libs.versions.android.minSdk.get().toInt()
 		targetSdk = libs.versions.android.targetSdk.get().toInt()
 		versionCode = 1
-		versionName = "1.0"
+		versionName = project.version.toString()
 
-		manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+		manifestPlaceholders["MAPS_API_KEY"] = getLocalProperty("maps.api.key")
 	}
 	buildFeatures {
 		buildConfig = true
@@ -128,12 +118,24 @@ android {
 		}
 	}
 	compileOptions {
-		sourceCompatibility = JavaVersion.VERSION_11
-		targetCompatibility = JavaVersion.VERSION_11
+		sourceCompatibility = JavaVersion.VERSION_17
+		targetCompatibility = JavaVersion.VERSION_17
+	}
+}
+
+buildkonfig {
+	packageName = "me.lenjoy.warsawtransportapp.config"
+	defaultConfigs {
+		val ztmApiKey = getLocalProperty("ztm.api.key")
+
+		buildConfigField(FieldSpec.Type.STRING, "ZTM_API_KEY", ztmApiKey)
+		buildConfigField(FieldSpec.Type.STRING, "MAPS_API_KEY", getLocalProperty("maps.api.key"))
+		buildConfigField(FieldSpec.Type.STRING, "APP_NAME", rootProject.name)
+		buildConfigField(FieldSpec.Type.STRING, "APP_ID", project.group.toString())
+		buildConfigField(FieldSpec.Type.STRING, "VERSION", project.version.toString())
 	}
 }
 
 dependencies {
 	debugImplementation(libs.compose.uiTooling)
 }
-

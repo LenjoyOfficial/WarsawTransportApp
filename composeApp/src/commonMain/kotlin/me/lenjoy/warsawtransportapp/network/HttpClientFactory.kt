@@ -11,6 +11,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import me.lenjoy.warsawtransportapp.config.BuildKonfig
 
 /**
  * Extension function to apply standard HTTP client configuration.
@@ -35,6 +36,7 @@ internal fun io.ktor.client.HttpClientConfig<*>.configure() {
 	}
 	defaultRequest {
 		header(HttpHeaders.Accept, ContentType.Application.Json)
+		header("x-functions-key", BuildKonfig.ZTM_API_KEY)
 	}
 }
 

@@ -40,6 +40,10 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import kotlinx.coroutines.async
 import me.lenjoy.warsawtransportapp.api.model.StopLocation
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.Res
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.error_fetching_data
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.nav_search
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.nav_settings
 import me.lenjoy.warsawtransportapp.i18n.LanguageProvider
 import me.lenjoy.warsawtransportapp.repository.FavoritesRepositoryImpl
 import me.lenjoy.warsawtransportapp.repository.TransportRepositoryImpl
@@ -52,10 +56,6 @@ import me.lenjoy.warsawtransportapp.ui.theme.AppTheme
 import me.lenjoy.warsawtransportapp.ui.theme.ThemeConfig
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import warsawtransportapp.composeapp.generated.resources.Res
-import warsawtransportapp.composeapp.generated.resources.error_fetching_data
-import warsawtransportapp.composeapp.generated.resources.nav_search
-import warsawtransportapp.composeapp.generated.resources.nav_settings
 
 // -----------------------------------------------------------------------------------
 // Screens
@@ -102,9 +102,7 @@ fun App() {
 
 	LaunchedEffect(Unit) {
 		try {
-			val routesDeffered = async { api.getRoutes() }
 			val stopsDeffered = async { api.getAllStops() }
-			routesDeffered.await()
 			stops = stopsDeffered.await()
 		} catch (e: Exception) {
 			snackbarHostState.showSnackbar(errorMessage)
@@ -170,6 +168,7 @@ fun App() {
 					entryProvider = entryProvider {
 						entry<HomeScreenEntry> {
 							HomeScreen(
+								stops = stops,
 								favoritesRepository = favoritesRepository,
 								searchBar = {
 									GlobalSearchBar(isLoading, stops) { stop ->

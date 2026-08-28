@@ -35,18 +35,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.lenjoy.warsawtransportapp.SettingsScreenEntry
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.Res
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.settings_appearance
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.settings_appearance_desc
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.settings_language
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.settings_language_desc
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.theme_dark
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.theme_light
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.theme_system
+import me.lenjoy.warsawtransportapp.config.BuildKonfig
 import me.lenjoy.warsawtransportapp.language
 import me.lenjoy.warsawtransportapp.themeConfig
 import me.lenjoy.warsawtransportapp.ui.theme.ThemeConfig
 import org.jetbrains.compose.resources.stringResource
-import warsawtransportapp.composeapp.generated.resources.Res
-import warsawtransportapp.composeapp.generated.resources.settings_appearance
-import warsawtransportapp.composeapp.generated.resources.settings_appearance_desc
-import warsawtransportapp.composeapp.generated.resources.settings_language
-import warsawtransportapp.composeapp.generated.resources.settings_language_desc
-import warsawtransportapp.composeapp.generated.resources.theme_dark
-import warsawtransportapp.composeapp.generated.resources.theme_light
-import warsawtransportapp.composeapp.generated.resources.theme_system
 
 @Composable
 fun SettingsScreen(
@@ -136,6 +137,31 @@ fun SettingsScreen(
 							onClick = { language = "pl" }
 						)
 					}
+				}
+
+				Spacer(modifier = Modifier.weight(1f))
+
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(vertical = 16.dp),
+					horizontalAlignment = Alignment.CenterHorizontally
+				) {
+					Text(
+						text = BuildKonfig.APP_NAME,
+						style = MaterialTheme.typography.labelMedium,
+						color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+					)
+					Text(
+						text = BuildKonfig.VERSION,
+						style = MaterialTheme.typography.labelMedium,
+						color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+					)
+					Text(
+						text = "Made by Lenjoy",
+						style = MaterialTheme.typography.labelMedium,
+						color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+					)
 				}
 			}
 		}

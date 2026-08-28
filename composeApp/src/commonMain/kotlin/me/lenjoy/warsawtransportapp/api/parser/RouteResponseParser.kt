@@ -1,32 +1,30 @@
 package me.lenjoy.warsawtransportapp.api.parser
 
-import me.lenjoy.warsawtransportapp.api.dto.RoutesResponseDto
+import me.lenjoy.warsawtransportapp.api.dto.RouteResponseDto
 import me.lenjoy.warsawtransportapp.api.model.RouteLine
 import me.lenjoy.warsawtransportapp.api.model.RouteStop
+import me.lenjoy.warsawtransportapp.api.model.TransportType
 
-/**
- * Parses the complex nested structure of [RoutesResponseDto] into a flattened list of [RouteLine].
- * This function handles the transformation from line -> route variant -> stop sequence.
- */
-internal fun parseRouteLines(response: RoutesResponseDto): List<RouteLine> =
-	response.result.entries.flatMap { (line, routeNames) ->
-		routeNames.entries.map { (routeName, stops) ->
-			val routeStops = stops.entries.mapNotNull { (sequenceKey, stopDto) ->
-				val stopGroupId = stopDto.stopGroupId ?: return@mapNotNull null
-				val stopPoleNumber = stopDto.stopPoleNumber ?: return@mapNotNull null
-				RouteStop(
-					sequence = sequenceKey.toIntOrNull() ?: 0,
-					streetId = stopDto.streetId,
-					stopGroupId = stopGroupId,
-					stopPoleNumber = stopPoleNumber,
-					type = stopDto.typ,
-					distanceMeters = stopDto.odleglosc,
-				)
-			}
-			RouteLine(
-				line = line,
-				routeName = routeName,
-				stops = routeStops,
+internal fun parseRouteLines(response: RouteResponseDto): List<RouteLine> {
+	val transportType = TransportType.fromApi(response.transportType)
+	return response.variants.entries.map { (variantName, variant) ->
+		val routeStops = variant.stops.entries.mapNotNull { (sequenceKey, stopDto) ->
+			val stopGroup = stopDto.stopGroup ?: return@mapNotNull null
+			val stopNumber = stopDto.stopNumber ?: return@mapNotNull null
+			RouteStop(
+				sequence = sequenceKey.toIntOrNull() ?: 0,
+				streetId = stopDto.streetId,
+				stopGroupId = stopGroup,
+				stopPoleNumber = stopNumber,
+				type = stopDto.type,
+				distanceMeters = stopDto.distance,
 			)
 		}
+		RouteLine(
+			line = response.routeNumber,
+			routeName = variantName,
+			transportType = transportType,
+			stops = routeStops,
+		)
 	}
+}

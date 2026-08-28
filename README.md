@@ -38,14 +38,12 @@ Set these keys locally (do not commit real values):
 **Android**
 
 - Add to `local.properties` (or `~/.gradle/gradle.properties`):
-    - `legacy.api.key=...`
     - `ztm.api.key=...`
     - `maps.api.key=...`
 
 **iOS**
 
 - Add values in `iosApp/Configuration/Config.xcconfig`:
-    - `legacy.api.key=...`
     - `ztm.api.key=...`
     - `maps.api.key=...`
 

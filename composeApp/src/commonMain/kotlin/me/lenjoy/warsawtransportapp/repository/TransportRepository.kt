@@ -14,35 +14,16 @@ import me.lenjoy.warsawtransportapp.api.parser.parseStopLines
 import me.lenjoy.warsawtransportapp.api.parser.parseStopLocation
 import me.lenjoy.warsawtransportapp.cache.platformFileSystem
 
-/**
- * Main entry point for fetching transit data in the application.
- * Returns domain models and hides implementation details like caching or raw API structure.
- */
 interface TransportRepository {
-	/**
-	 * Returns all available routes.
-	 */
-	suspend fun getRoutes(): List<RouteLine>
+	suspend fun getRoutes(line: String): List<RouteLine>
 
-	/**
-	 * Returns all transit stop locations.
-	 */
 	suspend fun getAllStops(): List<StopLocation>
 
-	/**
-	 * Returns the list of lines serving a specific stop.
-	 */
 	suspend fun getStopLines(stopGroupId: String, stopPoleNumber: String): List<StopLine>
 
-	/**
-	 * Returns scheduled departures for a specific line at a stop.
-	 */
-	suspend fun getDepartures(stopGroupId: String, stopPoleNumber: String, line: String, routes: List<RouteLine>): List<Departure>
+	suspend fun getDepartures(stopGroupId: String, stopPoleNumber: String, line: String): List<Departure>
 }
 
-/**
- * Implementation of [TransportRepository] that uses a cached API by default.
- */
 class TransportRepositoryImpl(
 	private val api: WarsawTransportApi = CachedWarsawTransportApi(
 		delegate = WarsawTransportApiImpl(),
@@ -50,14 +31,14 @@ class TransportRepositoryImpl(
 	),
 ) : TransportRepository {
 
-	override suspend fun getRoutes(): List<RouteLine> {
-		val raw = api.getRoutes()
+	override suspend fun getRoutes(line: String): List<RouteLine> {
+		val raw = api.getRoutes(line)
 		return parseRouteLines(raw)
 	}
 
 	override suspend fun getAllStops(): List<StopLocation> {
 		val raw = api.getStopLocations()
-		return raw.mapNotNull { row -> parseStopLocation(row.values) }
+		return raw.map(::parseStopLocation)
 	}
 
 	override suspend fun getStopLines(stopGroupId: String, stopPoleNumber: String): List<StopLine> {
@@ -69,9 +50,8 @@ class TransportRepositoryImpl(
 		stopGroupId: String,
 		stopPoleNumber: String,
 		line: String,
-		routes: List<RouteLine>
 	): List<Departure> {
 		val raw = api.getDepartures(stopGroupId, stopPoleNumber, line)
-		return parseDepartures(raw, routes, line)
+		return parseDepartures(raw, line)
 	}
 }

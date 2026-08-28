@@ -40,10 +40,10 @@ import androidx.compose.ui.unit.dp
 import me.lenjoy.warsawtransportapp.api.model.RouteLine
 import me.lenjoy.warsawtransportapp.api.model.RouteStop
 import me.lenjoy.warsawtransportapp.api.model.StopLocation
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.Res
+import me.lenjoy.warsawtransportapp.composeapp.generated.resources.error_fetching_data
 import me.lenjoy.warsawtransportapp.repository.TransportRepository
 import org.jetbrains.compose.resources.stringResource
-import warsawtransportapp.composeapp.generated.resources.Res
-import warsawtransportapp.composeapp.generated.resources.error_fetching_data
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,8 +62,8 @@ fun RouteDetailScreen(
 	LaunchedEffect(line, routeName) {
 		isLoading = true
 		try {
-			val allRoutes = repository.getRoutes()
-			routeLine = allRoutes.find { it.line == line && it.routeName == routeName }
+			val allRoutes = repository.getRoutes(line)
+			routeLine = allRoutes.find { it.routeName == routeName }
 			
 			val allStops = repository.getAllStops()
 			stops = allStops.associateBy { "${it.stopGroupId.value}_${it.stopPoleNumber.value}" }

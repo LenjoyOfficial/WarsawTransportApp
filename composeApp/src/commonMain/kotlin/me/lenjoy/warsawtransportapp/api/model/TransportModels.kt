@@ -46,6 +46,7 @@ data class StopLocation(
 	val stopGroupId: StopGroupId,
 	val stopPoleNumber: StopPoleNumber,
 	val stopName: String,
+	val type: TransportType,
 	val streetId: String?,
 	val latitude: Double?,
 	val longitude: Double?,

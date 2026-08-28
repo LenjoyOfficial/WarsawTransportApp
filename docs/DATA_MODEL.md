@@ -1,7 +1,7 @@
 # Data Model
 
 ## Overview
-- **DTOs** = wire shapes from Warsaw API
+- **DTOs** = wire shapes from the internal backend API
 - **Domain models** = app-ready types
 - **Parsers** = DTO → domain converters
 - **Cache** = Persistent disk storage for API responses
@@ -13,33 +13,57 @@
 ### `api.dto.TransportDtos`
 
 ```kotlin
-// Top-level API response wrapper
-ApiResultDto<T> { result: T }
-
-// Vehicle (real-time positions)
+// Vehicle (real-time positions) — kept from old ZTM API
 VehicleDto {
-  lines: String,
-  lat: String, lon: String,
-  vehicleNumber: String,
-  time: String,          // "2026-06-24 14:30:00"
-  brigade: String
+  lines, lon, lat, vehicleNumber, time, brigade
 }
 
-// Stop/Timetable rows (key-value arrays)
-KeyValueDto { key: String, value: String? }
-ValuesRowDto { values: List<KeyValueDto> }
+// Route response (GET /api/routes/{n})
+RouteResponseDto {
+  routeNumber: String,
+  transportType: String,          // "tram" | "bus" | "train" | "unknown"
+  variants: Map<String, RouteVariantDto>
+}
 
-// Route Stop (nested in routes API)
+RouteVariantDto {
+  name: String,
+  stops: Map<String, RouteStopDto>   // key = stop sequence number
+}
+
 RouteStopDto {
-  ulica_id: String?,
-  nr_zespolu: String?,
-  nr_przystanku: String?,
-  typ: String?,
-  odleglosc: Int?
+  streetId: String?,
+  stopGroup: String?,                 // "stop_group"
+  stopNumber: String?,                // "stop_number"
+  type: String?,
+  distance: Int?
 }
 
-// Routes response type alias
-typealias RoutesResponseDto = ApiResultDto<Map<String, Map<String, Map<String, RouteStopDto>>>>
+// Stop locations (GET /api/stops)
+StopLocationDto {
+  stopGroup: String,          // "stop_group"
+  stopPole: String,           // "stop_pole"
+  stopGroupName: String,      // "stop_group_name"
+  streetId: String?,
+  latitude: Double?,
+  longitude: Double?,
+  direction: String?,
+  validFrom: String?          // "valid_from"
+}
+
+// Lines at stop (GET /api/stops/{id}/{pole}/lines)
+StopLinesResponseDto {
+  stopId: String, stopNumber: String,
+  lines: List<String>
+}
+
+// Departures (GET /api/stops/{id}/{pole}/lines/{line}/departures)
+DepartureDto {
+  departureTime: String,       // "departure_time" HH:mm:ss
+  brigade: String?,
+  direction: String?,
+  route: String?,
+  symbol1: String?, symbol2: String?
+}
 ```
 
 ---
@@ -59,7 +83,7 @@ Vehicle {
   line: LineNumber,
   latitude: Double, longitude: Double,
   vehicleNumber: String,
-  time: String,       // raw API time
+  time: String,
   brigade: String
 }
 
@@ -71,7 +95,7 @@ StopLocation {
   streetId: String?,
   latitude: Double?, longitude: Double?,
   direction: String?,
-  validFrom: String?  // "2026-01-01 00:00:00"
+  validFrom: String?
 }
 
 // Lines at a stop
@@ -89,9 +113,9 @@ Departure {
 
 // Service time (handles 24+ hours for night lines)
 ServiceTime {
-  raw: String,        // "26:15:00"
-  dayOffset: Int,     // 0 or 1 (if > 24h)
-  hourOfDay: Int,     // 0-23
+  raw: String,           // "26:15:00"
+  dayOffset: Int,
+  hourOfDay: Int,
   minute: Int,
   second: Int
 }
@@ -100,17 +124,20 @@ ServiceTime {
 ### `api.model.RouteModels`
 
 ```kotlin
+TransportType { Tram, Bus, Train, Unknown }
+
 RouteLine {
-  routeId: String,          // "1"
-  routeName: String,        // "TD-3BAN"
+  line: String,
+  routeName: String,
+  transportType: TransportType,
   stops: List<RouteStop>
 }
 
 RouteStop {
   sequence: Int,
   streetId: String?,
-  stopGroupId: String,      // "3240"
-  stopPoleNumber: String,   // "04"
+  stopGroupId: String,
+  stopPoleNumber: String,
   type: String?,
   distanceMeters: Int?
 }
@@ -120,16 +147,6 @@ RouteStop {
 
 ## Parsers
 
-### `api.parser.KeyValueParsers`
-Convert `List<KeyValueDto>` ↔ `Map<String, String?>`.
-
-```kotlin
-List<KeyValueDto>.asMap(): Map<String, String?>
-Map<String, String?>.string(key: String): String?
-Map<String, String?>.double(key: String): Double?
-Map<String, String?>.int(key: String): Int?
-```
-
 ### `api.parser.RouteParsers`
 Convert DTOs → domain models.
 
@@ -137,18 +154,25 @@ Convert DTOs → domain models.
 parseServiceTime(raw: String): ServiceTime?
   // "26:15:00" → ServiceTime(dayOffset=1, hourOfDay=2, minute=15, ...)
 
-parseStopLocation(values: List<KeyValueDto>): StopLocation?
-parseStopLines(rows: List<ValuesRowDto>): List<StopLine>
-parseDepartures(rows: List<List<KeyValueDto>>): List<Departure>
+parseStopLocation(dto: StopLocationDto): StopLocation
+  // Direct mapping; null-safe fields become null in domain model
+
+parseStopLines(response: StopLinesResponseDto): List<StopLine>
+  // Maps response.lines → List<StopLine>
+
+parseDepartures(rows: List<DepartureDto>, line: String): List<Departure>
+  // Parses departure_time via parseServiceTime; sets line from parameter
+
 parseVehicleDto(...): Vehicle?
 ```
 
 ### `api.parser.RouteResponseParser`
-Parse nested route DTO.
+Parse route DTO.
 
 ```kotlin
-parseRouteLines(response: RoutesResponseDto): List<RouteLine>
-  // Flattens route-id -> route-name -> sequence -> stop hierarchy
+parseRouteLines(response: RouteResponseDto): List<RouteLine>
+  // Extracts transport_type → TransportType enum
+  // Flattens variants → List<RouteLine>, each with stops from variant.stops
 ```
 
 ---
@@ -179,14 +203,14 @@ A **Decorator** for `WarsawTransportApi` that intercepts calls to provide cached
 
 ## API Service (`api.WarsawTransportApi`)
 
-Raw HTTP calls to 4 endpoints. Returns typed DTOs.
+Raw HTTP calls to 4 endpoints. Returns typed DTOs. Uses `GET` with `x-functions-key` header.
 
 ```kotlin
 interface WarsawTransportApi {
-    suspend fun getRoutes(): RoutesResponseDto
-    suspend fun getStopLocations(): List<ValuesRowDto>
-    suspend fun getStopLines(stopGroupId, stopPoleNumber): List<ValuesRowDto>
-    suspend fun getDepartures(stopGroupId, stopPoleNumber, line): List<List<KeyValueDto>>
+    suspend fun getRoutes(line: String): RouteResponseDto
+    suspend fun getStopLocations(): List<StopLocationDto>
+    suspend fun getStopLines(stopGroupId, stopPoleNumber): StopLinesResponseDto
+    suspend fun getDepartures(stopGroupId, stopPoleNumber, line): List<DepartureDto>
 }
 ```
 
@@ -202,7 +226,7 @@ Wraps API + parsers. Returns domain models only. UI layer depends on this, not t
 
 ```kotlin
 interface TransportRepository {
-    suspend fun getRoutes(): List<RouteLine>
+    suspend fun getRoutes(line: String): List<RouteLine>
     suspend fun getAllStops(): List<StopLocation>
     suspend fun getStopLines(stopGroupId, stopPoleNumber): List<StopLine>
     suspend fun getDepartures(stopGroupId, stopPoleNumber, line): List<Departure>

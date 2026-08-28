@@ -9,7 +9,7 @@ class WarsawTransportApiTest {
 	@Test
 	fun testGetRoutes() = runTest {
 		val repo = TransportRepositoryImpl()
-		val result = repo.getRoutes()
+		val result = repo.getRoutes("15")
 		println("GetRoutes Response: ${result[0]}")
 	}
 
@@ -30,9 +30,7 @@ class WarsawTransportApiTest {
 	@Test
 	fun testGetDepartures() = runTest {
 		val repo = TransportRepositoryImpl()
-
-		val routes = repo.getRoutes()
-		val result = repo.getDepartures("6002", "03", "15", routes)
+		val result = repo.getDepartures("6002", "03", "15")
 		println("GetDepartures Response: $result")
 		if (result.isNotEmpty()) {
 			println("First Departure: ${result[0]}")

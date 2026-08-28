@@ -1,53 +1,14 @@
 package me.lenjoy.warsawtransportapp.api.parser
 
-import me.lenjoy.warsawtransportapp.api.dto.KeyValueDto
+import me.lenjoy.warsawtransportapp.api.dto.DepartureDto
+import me.lenjoy.warsawtransportapp.api.dto.StopLinesResponseDto
+import me.lenjoy.warsawtransportapp.api.dto.StopLocationDto
 import me.lenjoy.warsawtransportapp.api.model.LineNumber
-import me.lenjoy.warsawtransportapp.api.model.RouteLine
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-
-class KeyValueParsersTest {
-	@Test
-	fun testAsMapConvertsKeyValueDtoListToMap() {
-		val input = listOf(
-			KeyValueDto("key1", "value1"),
-			KeyValueDto("key2", "value2"),
-			KeyValueDto("key3", null),
-		)
-		val result = input.asMap()
-		assertEquals("value1", result["key1"])
-		assertEquals("value2", result["key2"])
-		assertNull(result["key3"])
-	}
-
-	@Test
-	fun testStringExtensionReturnsValueForKey() {
-		val map = mapOf("name" to "Test Stop", "id" to null)
-		assertEquals("Test Stop", map.string("name"))
-		assertNull(map.string("id"))
-		assertNull(map.string("nonexistent"))
-	}
-
-	@Test
-	fun testDoubleExtensionConvertsStringToDouble() {
-		val map = mapOf("lat" to "52.230155", "lon" to "21.011832", "bad" to "not_a_number")
-		assertEquals(52.230155, map.double("lat"))
-		assertEquals(21.011832, map.double("lon"))
-		assertNull(map.double("bad"))
-		assertNull(map.double("nonexistent"))
-	}
-
-	@Test
-	fun testIntExtensionConvertsStringToInt() {
-		val map = mapOf("distance" to "1250", "bad" to "not_a_number")
-		assertEquals(1250, map.int("distance"))
-		assertNull(map.int("bad"))
-		assertNull(map.int("nonexistent"))
-	}
-}
 
 class ServiceTimeParserTest {
 	@Test
@@ -100,18 +61,17 @@ class ServiceTimeParserTest {
 class StopLocationParserTest {
 	@Test
 	fun testParseStopLocationSuccess() {
-		val values = listOf(
-			KeyValueDto("zespol", "7009"),
-			KeyValueDto("slupek", "01"),
-			KeyValueDto("nazwa_zespolu", "Centrum"),
-			KeyValueDto("id_ulicy", "1101"),
-			KeyValueDto("szer_geo", "52.230005"),
-			KeyValueDto("dlug_geo", "21.011384"),
-			KeyValueDto("kierunek", "Muranów"),
-			KeyValueDto("obowiazuje_od", "2026-01-01 00:00:00"),
+		val dto = StopLocationDto(
+			stopGroup = "7009",
+			stopPole = "01",
+			stopGroupName = "Centrum",
+			streetId = "1101",
+			latitude = 52.230005,
+			longitude = 21.011384,
+			direction = "Muranów",
+			validFrom = "2026-01-01 00:00:00",
 		)
-		val result = parseStopLocation(values)
-		assertNotNull(result)
+		val result = parseStopLocation(dto)
 		assertEquals("7009", result.stopGroupId.value)
 		assertEquals("01", result.stopPoleNumber.value)
 		assertEquals("Centrum", result.stopName)
@@ -123,22 +83,13 @@ class StopLocationParserTest {
 	}
 
 	@Test
-	fun testParseStopLocationMissingRequiredFields() {
-		val values = listOf(
-			KeyValueDto("nazwa_zespolu", "Centrum"),
-		)
-		assertNull(parseStopLocation(values))
-	}
-
-	@Test
 	fun testParseStopLocationWithoutOptionalFields() {
-		val values = listOf(
-			KeyValueDto("zespol", "7009"),
-			KeyValueDto("slupek", "01"),
-			KeyValueDto("nazwa_zespolu", "Centrum"),
+		val dto = StopLocationDto(
+			stopGroup = "7009",
+			stopPole = "01",
+			stopGroupName = "Centrum",
 		)
-		val result = parseStopLocation(values)
-		assertNotNull(result)
+		val result = parseStopLocation(dto)
 		assertEquals("Centrum", result.stopName)
 		assertNull(result.streetId)
 		assertNull(result.latitude)
@@ -149,26 +100,21 @@ class StopLocationParserTest {
 class DepartureParserTest {
 	@Test
 	fun testParseDeparturesSuccess() {
-		val routes = listOf(
-			RouteLine("116", "TP-WIL", listOf()),
-		)
 		val rows = listOf(
-			listOf(
-				KeyValueDto("trasa", "TP-WIL"),
-				KeyValueDto("kierunek", "Wilanów"),
-				KeyValueDto("czas", "14:15:00"),
-				KeyValueDto("brygada", "1"),
-				KeyValueDto("symbol_1", null),
-				KeyValueDto("symbol_2", null),
+			DepartureDto(
+				departureTime = "14:15:00",
+				brigade = "1",
+				direction = "Wilanów",
+				route = "TP-WIL",
 			),
-			listOf(
-				KeyValueDto("trasa", "TP-WIL"),
-				KeyValueDto("kierunek", "Wilanów"),
-				KeyValueDto("czas", "14:30:00"),
-				KeyValueDto("brygada", "2"),
+			DepartureDto(
+				departureTime = "14:30:00",
+				brigade = "2",
+				direction = "Wilanów",
+				route = "TP-WIL",
 			),
 		)
-		val result = parseDepartures(rows, routes)
+		val result = parseDepartures(rows, "116")
 		assertEquals(2, result.size)
 		assertEquals(LineNumber("116"), result[0].line)
 		assertEquals("Wilanów", result[0].direction)
@@ -179,16 +125,10 @@ class DepartureParserTest {
 
 	@Test
 	fun testParseDeparturesInvalidTime() {
-		val routes = listOf(
-			RouteLine("116", "TP-WIL", listOf()),
-		)
 		val rows = listOf(
-			listOf(
-				KeyValueDto("linia", "116"),
-				KeyValueDto("czas", "invalid"),
-			),
+			DepartureDto(departureTime = "invalid"),
 		)
-		val result = parseDepartures(rows, routes)
+		val result = parseDepartures(rows, "116")
 		assertTrue(result.isEmpty())
 	}
 }
@@ -196,18 +136,12 @@ class DepartureParserTest {
 class StopLinesParserTest {
 	@Test
 	fun testParseStopLinesSuccess() {
-		val rows = listOf(
-			me.lenjoy.warsawtransportapp.api.dto.ValuesRowDto(
-				values = listOf(KeyValueDto("linia", "23"))
-			),
-			me.lenjoy.warsawtransportapp.api.dto.ValuesRowDto(
-				values = listOf(KeyValueDto("linia", "20"))
-			),
-			me.lenjoy.warsawtransportapp.api.dto.ValuesRowDto(
-				values = listOf(KeyValueDto("linia", "24"))
-			),
+		val response = StopLinesResponseDto(
+			stopId = "5070",
+			stopNumber = "03",
+			lines = listOf("23", "20", "24"),
 		)
-		val result = parseStopLines(rows)
+		val result = parseStopLines(response)
 		assertEquals(3, result.size)
 		assertEquals(LineNumber("23"), result[0].line)
 		assertEquals(LineNumber("20"), result[1].line)
@@ -216,19 +150,12 @@ class StopLinesParserTest {
 
 	@Test
 	fun testParseStopLinesEmptyList() {
-		val result = parseStopLines(emptyList())
-		assertEquals(0, result.size)
-	}
-
-	@Test
-	fun testParseStopLinesMissingLineKey() {
-		val rows = listOf(
-			me.lenjoy.warsawtransportapp.api.dto.ValuesRowDto(
-				values = listOf(KeyValueDto("other_key", "value"))
-			),
+		val response = StopLinesResponseDto(
+			stopId = "5070",
+			stopNumber = "03",
+			lines = emptyList(),
 		)
-		val result = parseStopLines(rows)
+		val result = parseStopLines(response)
 		assertEquals(0, result.size)
 	}
 }
-
