@@ -14,6 +14,11 @@ plugins {
 }
 
 kotlin {
+    // Suppress warnings about expect/actual classes being in Beta
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()

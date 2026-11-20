@@ -49,6 +49,7 @@ import eu.buney.maps.LatLng
 import eu.buney.maps.MapProperties
 import eu.buney.maps.MapStyleOptions
 import eu.buney.maps.MapUiSettings
+import eu.buney.maps.Marker
 import eu.buney.maps.rememberBitmapDescriptor
 import eu.buney.maps.rememberCameraPositionState
 import eu.buney.maps.utils.clustering.Clustering
